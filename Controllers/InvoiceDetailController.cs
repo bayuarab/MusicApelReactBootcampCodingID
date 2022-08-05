@@ -16,12 +16,35 @@ namespace SecondV.Controllers
         [HttpGet("{invoiceId}")]
         public async Task<ActionResult<InvoiceDetail>> Get(string invoiceId)
         {
-            var detailInvoice = await this.dataContext.InvoiceDetails.Where(x => x.NoInvoice == invoiceId).ToListAsync();
-            
-            if (detailInvoice.Count == 0)
+            var z = invoiceId;
+            var data = await this.dataContext.InvoiceDetails.
+            Join(this.dataContext.Courses,
+                ind => ind.FKCourse,
+                c => c.Id,
+                (ind, c) => new {ind, c}).
+            Join(this.dataContext.CourseCategories,
+                indc => indc.c.FKCategory,
+                cc => cc.Id,
+                (indccc, cc) => new {indccc, cc}).
+            Join(this.dataContext.MasterInvoices,
+                indccm => indccm.indccc.ind.NoInvoice,
+                mi => mi.NoInvoice,
+                (indccm, mi) => new {indccm, mi}).
+            Select(result => new { 
+                NoInvoice = result.indccm.indccc.ind.NoInvoice,
+                Course = result.indccm.indccc.c.CourseTitle,
+                Category = result.indccm.cc.Category,
+                Schedule = result.indccm.indccc.c.Jadwal,
+                Price = result.indccm.indccc.c.Price,
+                Cost = result.mi.Cost,
+                PurchasedTime = result.mi.PurchaseDate
+            }).
+            Where(result => result.NoInvoice == invoiceId).ToListAsync();
+
+            if (data.Count == 0)
                 return BadRequest("Not Found");
 
-            return Ok(detailInvoice);
+            return Ok(data);  
         }
 
         [HttpPost]
@@ -31,6 +54,19 @@ namespace SecondV.Controllers
             await this.dataContext.SaveChangesAsync();
 
             return Ok(await this.dataContext.InvoiceDetails.ToListAsync());
-        }       
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<List<MasterInvoice>>> Delete(int id)
+        {
+            var detailInvoice = await this.dataContext.InvoiceDetails.FindAsync(id);
+            if ( detailInvoice == null)
+                return BadRequest("Not Found");
+
+            this.dataContext.InvoiceDetails.Remove(detailInvoice);
+            await this.dataContext.SaveChangesAsync();
+
+            return Ok(await this.dataContext.InvoiceDetails.ToListAsync());
+        }
     }
 }
