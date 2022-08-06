@@ -5,5 +5,6 @@ namespace SecondV.Models
         public int Id { get; set; }
         public string? NoInvoice { get; set; }
         public int FKCourse { get; set; }
+        public int UserId { get; set; }
     }
 }

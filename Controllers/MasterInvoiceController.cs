@@ -18,14 +18,24 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.MasterInvoices.ToListAsync());
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<MasterInvoice>> Get(int id)
+        [HttpGet("GetByMasterID/{id}")]
+        public async Task<ActionResult<MasterInvoice>> GetByMInvoiceID(int id)
         {
             var masterInvoice = await this.dataContext.MasterInvoices.FindAsync(id);
             if (masterInvoice == null)
                 return BadRequest("Not Found");
             return Ok(masterInvoice);
         }
+
+        [HttpGet("GetByUID/{userId}")]
+        public async Task<ActionResult<MasterInvoice>> GetByUserID(int userId)
+        {
+            var masterInvoice = await this.dataContext.MasterInvoices.Where(data => data.UserId == userId).ToListAsync();
+            if (masterInvoice.Count == 0)
+                return BadRequest("Not Found");
+            return Ok(masterInvoice);
+        }
+
 
         [HttpPost]
         public async Task<ActionResult<List<MasterInvoice>>> AddMasterInvoice(MasterInvoice masterInvoice)
