@@ -133,10 +133,11 @@ namespace SecondV.Controllers
                 (mindccc, cc) => new {mindccc, cc}).
             Where(result => result.mindccc.mindc.mi.NoInvoice == noInvoice).
             Select(result => new {
-                NoInvoice = result.mindccc.mindc.ind.NoInvoice,
+                NoInvoice = result.mindccc.mindc.mi.NoInvoice,
                 Course = result.mindccc.c.CourseTitle,
                 Category = result.cc.Category,
                 Schedule = result.mindccc.c.Jadwal,
+                Price = result.mindccc.c.Price,
                 Cost = result.mindccc.mindc.mi.Cost,
                 PurchasedDate = result.mindccc.mindc.mi.PurchaseDate
             }).ToListAsync();

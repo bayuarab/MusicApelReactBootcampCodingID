@@ -22,6 +22,7 @@ namespace SecondV.Controllers
                     cc => cc.Id,
                     (c, cc) => new {c, cc}).
                 Select(result => new {
+                    result.c.Id,
                     result.c.CourseTitle,
                     result.c.Jadwal,
                     result.c.Price,

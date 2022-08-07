@@ -13,6 +13,24 @@ namespace SecondV.Controllers
             this.dataContext = dataContext;           
         }
 
+        [HttpGet]
+        public async Task<ActionResult<List<User>>> GetUser()
+        {
+            return Ok(await this.dataContext.Users.ToListAsync());
+        }
+
+        [HttpPost("Login")]
+        public async Task<ActionResult<List<User>>> UserLogin(User request)
+        {
+            var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.Username == request.Username);
+            if (userValid == null)
+                return BadRequest("username not found");
+            // if (userValid.Id != request.Id)
+            //     return BadRequest("Not match password and email");
+
+            return Ok(userValid);
+        }
+
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUsers(User user)
         {
@@ -47,6 +65,19 @@ namespace SecondV.Controllers
             if (userCart.Count == 0)
                 return BadRequest("Not Found");
             return Ok(userCart);
+        }
+
+        [HttpDelete("Cart/{id}")]
+        public async Task<ActionResult<List<Cart>>> Delete(int id)
+        {
+            var userCart = await this.dataContext.Carts.FindAsync(id);
+            if (userCart == null)
+                return BadRequest("Not Found");
+
+            this.dataContext.Carts.Remove(userCart);
+            await this.dataContext.SaveChangesAsync();
+
+            return Ok(await this.dataContext.Carts.ToListAsync());
         }
 
         [HttpGet("Invoices/{userId}")]
