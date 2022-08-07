@@ -13,5 +13,8 @@ namespace SecondV.Data
         public DbSet<CourseCategory> CourseCategories { get; set; }
 
         public DbSet<Cart> Carts { get; set; }
+
+        public DbSet<User> Users { get; set; }
+
     }
 }

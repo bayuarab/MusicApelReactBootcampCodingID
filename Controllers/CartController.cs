@@ -4,31 +4,32 @@ namespace SecondV.Controllers
 {
   [ApiController]
     [Route("api/[controller]")]
-    public class UserOwnController : ControllerBase
+    public class CartController : ControllerBase
     {
         private DataContext dataContext;
 
-        public UserOwnController(DataContext dataContext)
+        public CartController(DataContext dataContext)
         {
-            this.dataContext = dataContext;           
+            this.dataContext = dataContext;
         }
 
-        [HttpGet("Cart")]
-        public async Task<ActionResult<List<MasterInvoice>>> GetAllCart()
+        [HttpGet]
+        public async Task<ActionResult<List<Cart>>> GetAllCart()
         {
             return Ok(await this.dataContext.Carts.ToListAsync());
         }
 
-        [HttpGet("Cart/{userID}")]
-        public async Task<ActionResult<Cart>> GetCartByUID(int userID)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<List<Cart>>> Get(int id)
         {
-            var userCart = await this.dataContext.Carts.Where(data => data.UserId == userID).ToListAsync();
-            if (userCart.Count == 0)
+            var CartID = await this.dataContext.Carts.FindAsync(id);
+            if (CartID == null)    
                 return BadRequest("Not Found");
-            return Ok(userCart);
+
+            return Ok(CartID);
         }
 
-        [HttpDelete("Cart/{id}")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<Cart>>> Delete(int id)
         {
             var userCart = await this.dataContext.Carts.FindAsync(id);
@@ -41,13 +42,13 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Carts.ToListAsync());
         }
 
-        [HttpPost("Cart")]
+        [HttpPost]
         public async Task<ActionResult<List<Cart>>> AddUserCart(Cart cart)
         {
             var existedCart = this.dataContext.Carts.Where(data => data.UserId == cart.UserId);
-            var statusExist = existedCart.FirstOrDefault(x => x.FKCourse == cart.FKCourse);
+            var statusExist = existedCart.FirstOrDefault(x => x.CourseId == cart.CourseId);
             if (statusExist != null)
-                return BadRequest("Course already added to Cart");
+                return BadRequest("Course already added to Cart by UID " + cart.UserId.ToString());
 
             this.dataContext.Carts.Add(cart);
             await this.dataContext.SaveChangesAsync();

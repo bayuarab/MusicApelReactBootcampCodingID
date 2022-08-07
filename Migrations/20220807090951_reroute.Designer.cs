@@ -11,8 +11,8 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220806040717_AddingCartAPI")]
-    partial class AddingCartAPI
+    [Migration("20220807090951_reroute")]
+    partial class reroute
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -31,13 +31,17 @@ namespace SecondV.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("FKCourse")
+                    b.Property<int>("CourseId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Carts");
                 });
@@ -50,11 +54,11 @@ namespace SecondV.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<int>("CourseCategoryId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CourseTitle")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("FKCategory")
-                        .HasColumnType("int");
 
                     b.Property<string>("Jadwal")
                         .HasColumnType("nvarchar(max)");
@@ -63,6 +67,8 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseCategoryId");
 
                     b.ToTable("Courses");
                 });
@@ -91,16 +97,20 @@ namespace SecondV.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("FKCourse")
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MasterInvoiceId")
                         .HasColumnType("int");
 
                     b.Property<string>("NoInvoice")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("MasterInvoiceId");
 
                     b.ToTable("InvoiceDetails");
                 });
@@ -130,7 +140,89 @@ namespace SecondV.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("MasterInvoices");
+                });
+
+            modelBuilder.Entity("SecondV.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("roles")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SecondV.Models.Cart", b =>
+                {
+                    b.HasOne("SecondV.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecondV.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SecondV.Models.Course", b =>
+                {
+                    b.HasOne("SecondV.Models.CourseCategory", "CourseCategory")
+                        .WithMany()
+                        .HasForeignKey("CourseCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CourseCategory");
+                });
+
+            modelBuilder.Entity("SecondV.Models.InvoiceDetail", b =>
+                {
+                    b.HasOne("SecondV.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecondV.Models.MasterInvoice", "MasterInvoice")
+                        .WithMany()
+                        .HasForeignKey("MasterInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("MasterInvoice");
+                });
+
+            modelBuilder.Entity("SecondV.Models.MasterInvoice", b =>
+                {
+                    b.HasOne("SecondV.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

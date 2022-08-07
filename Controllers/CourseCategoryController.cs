@@ -27,5 +27,18 @@ namespace SecondV.Controllers
 
             return Ok(await this.dataContext.CourseCategories.ToListAsync());
         }
+
+        [HttpDelete]
+        public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
+        {
+            var courseCategory = await this.dataContext.CourseCategories.FindAsync(id);
+            if ( courseCategory == null)
+                return BadRequest("Not Found");
+
+            this.dataContext.CourseCategories.Remove(courseCategory);
+            await this.dataContext.SaveChangesAsync();
+
+            return Ok(await this.dataContext.CourseCategories.ToListAsync());
+        }
     }
 }

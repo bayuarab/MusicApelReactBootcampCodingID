@@ -18,7 +18,7 @@ namespace SecondV.Controllers
         {
             var data = await this.dataContext.Courses.
                 Join(this.dataContext.CourseCategories,
-                    c => c.FKCategory,
+                    c => c.CourseCategoryId,
                     cc => cc.Id,
                     (c, cc) => new {c, cc}).
                 Select(result => new {
