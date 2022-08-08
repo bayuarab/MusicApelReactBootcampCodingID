@@ -7,5 +7,6 @@ namespace SecondV.Models
         public string? Jadwal { get; set; }
         public int Price { get; set; }
         public int CourseCategoryId { get; set; }
+        public CourseCategory? CourseCategory { get; set; }
     }
 }

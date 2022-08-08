@@ -22,13 +22,19 @@ namespace SecondV.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<List<User>>> UserLogin(User request)
         {
-            var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.Username == request.Username);
-            if (userValid == null)
+            var valid = await this.dataContext.Users.
+            Where(result => result.Username == request.Username).
+            Select(result => new {
+                id = result.Id,
+                roles = result.roles
+            }).ToListAsync();
+            //var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.Username == request.Username);
+            if (valid.Count == 0)
                 return BadRequest("username not found");
-            // if (userValid.Id != request.Id)
+            // if (userValid.pass != request.Id)
             //     return BadRequest("Not match password and email");
 
-            return Ok(userValid);
+            return Ok(valid[0]);
         }
 
         [HttpPost]
@@ -38,6 +44,24 @@ namespace SecondV.Controllers
             await this.dataContext.SaveChangesAsync();
 
             return Ok(await this.dataContext.Users.ToListAsync());
+        }
+
+        [HttpPost("MInvoice")]
+        public async Task<ActionResult<List<MasterInvoice>>> AddMasterInvoice(MasterInvoice masterInvoice)
+        {
+            this.dataContext.MasterInvoices.Add(masterInvoice);
+            await this.dataContext.SaveChangesAsync();
+            var newMasterInvoice = this.dataContext.MasterInvoices.FirstOrDefault(result => result.NoInvoice == masterInvoice.NoInvoice);
+            return Ok(newMasterInvoice);
+        }
+
+        [HttpPost("InvoiceDetails")]
+        public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetail invoiceDetail)
+        {
+            this.dataContext.InvoiceDetails.Add(invoiceDetail);
+            await this.dataContext.SaveChangesAsync();
+
+            return Ok(await this.dataContext.InvoiceDetails.ToListAsync());
         }
         
         [HttpGet("Cart/{userID}")]
@@ -54,6 +78,7 @@ namespace SecondV.Controllers
                 (caccc, cc) => new {caccc, cc}).
             Where(data => data.caccc.ca.UserId == userID).
             Select(result => new {
+                CourseId = result.caccc.c.Id,
                 Course = result.caccc.c.CourseTitle,
                 Category = result.cc.Category,
                 Schedule = result.caccc.c.Jadwal,

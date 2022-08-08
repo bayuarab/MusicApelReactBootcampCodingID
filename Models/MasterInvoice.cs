@@ -8,6 +8,6 @@ namespace SecondV.Models
         public int Qty { get; set; }
         public int Cost { get; set; }
         public int UserId { get; set; }
-        // public User? User { get; set; }
+        public User? User { get; set; }
     }
 }
