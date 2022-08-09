@@ -25,7 +25,7 @@ namespace SecondV.Controllers
             this.dataContext.Users.Add(user);
             await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.Users.ToListAsync());
+            return Ok("Registrasi sukses");
         }
 
         [HttpPost("Login")]
@@ -42,9 +42,9 @@ namespace SecondV.Controllers
 
             var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
             if (userValid == null)
-                return BadRequest("email not found");
-            // if (userValid.password != request.password) comment due to easier test purpose
-            //     return BadRequest("Wrong Password");
+                return BadRequest("username not found");
+            if (userValid.password != request.password)
+                return BadRequest("Wrong Password");
 
             return Ok(userValid);
         }
@@ -104,7 +104,7 @@ namespace SecondV.Controllers
                 return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == invoiceDetail.NoInvoice).ToListAsync());    
             }
             catch
-            {
+        {
                  return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -186,8 +186,8 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpGet("Courses/{userId}")]
-        public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByUserID(int userId)
+        [HttpPost("InvoiceDetails")]
+        public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetail invoiceDetail)
         {
             try
             {
@@ -224,4 +224,4 @@ namespace SecondV.Controllers
             
         }
     }
-}
+    }
