@@ -19,6 +19,15 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Users.ToListAsync());
         }
 
+        [HttpPost]
+        public async Task<ActionResult<List<User>>> AddUsers(User user)
+        {
+            this.dataContext.Users.Add(user);
+            await this.dataContext.SaveChangesAsync();
+
+            return Ok(await this.dataContext.Users.ToListAsync());
+        }
+
         [HttpPost("Login")]
         public async Task<ActionResult<List<User>>> UserLogin(User request)
         {
@@ -33,9 +42,9 @@ namespace SecondV.Controllers
 
             var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
             if (userValid == null)
-                return BadRequest("username not found");
-            if (userValid.password != request.password)
-                return BadRequest("Wrong Password");
+                return BadRequest("email not found");
+            // if (userValid.password != request.password) comment due to easier test purpose
+            //     return BadRequest("Wrong Password");
 
             return Ok(userValid);
         }
@@ -52,110 +61,167 @@ namespace SecondV.Controllers
             return BadRequest("Registration Failed");
         }
 
-        [HttpPost]
-        public async Task<ActionResult<List<User>>> AddUsers(User user)
-        {
-            this.dataContext.Users.Add(user);
-            await this.dataContext.SaveChangesAsync();
-
-            return Ok(await this.dataContext.Users.ToListAsync());
-        }
-
         [HttpPost("MInvoice")]
         public async Task<ActionResult<List<MasterInvoice>>> AddMasterInvoice(MasterInvoice masterInvoice)
         {
-            this.dataContext.MasterInvoices.Add(masterInvoice);
-            await this.dataContext.SaveChangesAsync();
-            var newMasterInvoice = this.dataContext.MasterInvoices.FirstOrDefault(result => result.NoInvoice == masterInvoice.NoInvoice);
-            return Ok(newMasterInvoice);
+            try
+            {   
+                var validId = await this.dataContext.MasterInvoices.FindAsync(masterInvoice.Id);
+                var validNoInvoice = await this.dataContext.MasterInvoices.FirstOrDefaultAsync(data => data.NoInvoice == masterInvoice.NoInvoice);
+                var validUserId = await this.dataContext.MasterInvoices.FindAsync(masterInvoice.UserId);
+                if(validId != null || validNoInvoice != null || validUserId == null)
+                    return BadRequest("Not valid data");
+
+                this.dataContext.MasterInvoices.Add(masterInvoice);
+                await this.dataContext.SaveChangesAsync();
+                var newMasterInvoice = this.dataContext.MasterInvoices.FirstOrDefault(result => result.NoInvoice == masterInvoice.NoInvoice);
+                return Ok(newMasterInvoice); 
+            }
+
+            catch 
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpPost("InvoiceDetails")]
         public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetail invoiceDetail)
         {
-            this.dataContext.InvoiceDetails.Add(invoiceDetail);
-            await this.dataContext.SaveChangesAsync();
+            try
+            {
+                var validMasterId = await this.dataContext.MasterInvoices.FindAsync(invoiceDetail.MasterInvoiceId);
+                var validId = await this.dataContext.InvoiceDetails.FindAsync(invoiceDetail.Id);
+                var validCourseId = await this.dataContext.Courses.FindAsync(invoiceDetail.CourseId);
+                if ((validMasterId == null) || (validId != null) || (validCourseId == null))
+                    return BadRequest("Not valid data");
 
-            return Ok(await this.dataContext.InvoiceDetails.ToListAsync());
+                if (validMasterId.NoInvoice != invoiceDetail.NoInvoice)
+                    return BadRequest("Not valid data");
+
+                this.dataContext.InvoiceDetails.Add(invoiceDetail);
+                await this.dataContext.SaveChangesAsync();
+
+                return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == invoiceDetail.NoInvoice).ToListAsync());    
+            }
+            catch
+            {
+                 return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpGet("Cart/{userID}")]
         public async Task<ActionResult<Cart>> GetCartByUID(int userID)
         {
-            var userCart = await this.dataContext.Carts.
-            Join(this.dataContext.Courses,
-                ca => ca.CourseId,
-                c => c.Id,
-                (ca, c) => new { ca, c }).
-            Join(this.dataContext.CourseCategories,
-                cac => cac.c.CourseCategoryId,
-                cc => cc.Id,
-                (caccc, cc) => new { caccc, cc }).
-            Where(data => data.caccc.ca.UserId == userID).
-            Select(result => new
+            try
             {
-                Course = result.caccc.c.CourseTitle,
-                Category = result.cc.Category,
-                Schedule = result.caccc.c.Jadwal,
-                Price = result.caccc.c.Price,
-                Id = result.caccc.ca.Id
-            }).
-            ToListAsync();
+                var userCart = await this.dataContext.Carts.
+                Join(this.dataContext.Courses,
+                    ca => ca.CourseId,
+                    c => c.Id,
+                    (ca, c) => new { ca, c }).
+                Join(this.dataContext.CourseCategories,
+                    cac => cac.c.CourseCategoryId,
+                    cc => cc.Id,
+                    (caccc, cc) => new { caccc, cc }).
+                Where(data => data.caccc.ca.UserId == userID).
+                Select(result => new
+                {
+                    CourseId = result.caccc.c.Id,
+                    Course = result.caccc.c.CourseTitle,
+                    Category = result.cc.Category,
+                    Schedule = result.caccc.c.Jadwal,
+                    Price = result.caccc.c.Price,
+                    Id = result.caccc.ca.Id
+                }).
+                ToListAsync();
 
-            if (userCart.Count == 0)
-                return BadRequest("Not Found");
-            return Ok(userCart);
+                if (userCart.Count == 0)
+                    return BadRequest("Not Found");
+
+                return Ok(userCart);    
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
-        [HttpDelete("Cart/{id}")]
-        public async Task<ActionResult<List<Cart>>> Delete(int id)
+        [HttpDelete("Cart/{UserId}/{id}")]
+        public async Task<ActionResult<List<Cart>>> Delete(int UserId, int id)
         {
-            var userCart = await this.dataContext.Carts.FindAsync(id);
-            if (userCart == null)
-                return BadRequest("Not Found");
+            try
+            {
+                var userCart = await this.dataContext.Carts.FindAsync(id);
+                if (userCart == null)
+                    return BadRequest("Not Found");
+                
+                if (userCart.UserId != UserId)
+                    return BadRequest("Not valid data");
 
-            this.dataContext.Carts.Remove(userCart);
-            await this.dataContext.SaveChangesAsync();
+                this.dataContext.Carts.Remove(userCart);
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.Carts.ToListAsync());
+                return Ok(await this.dataContext.Carts.ToListAsync());
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpGet("Invoices/{userId}")]
         public async Task<ActionResult<MasterInvoice>> GetByUserID(int userId)
         {
-            var masterInvoice = await this.dataContext.MasterInvoices.Where(data => data.UserId == userId).ToListAsync();
-            if (masterInvoice.Count == 0)
-                return BadRequest("Not Found");
-            return Ok(masterInvoice);
+            try
+            {
+                var masterInvoice = await this.dataContext.MasterInvoices.Where(data => data.UserId == userId).ToListAsync();
+                if (masterInvoice.Count == 0)
+                    return BadRequest("Not Found");
+
+                return Ok(masterInvoice);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpGet("Courses/{userId}")]
         public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByUserID(int userId)
         {
-            var courseData = await this.dataContext.MasterInvoices.
-            Join(this.dataContext.InvoiceDetails,
-                mi => mi.Id,
-                ind => ind.MasterInvoiceId,
-                (mi, ind) => new { mi, ind }).
-            Join(this.dataContext.Courses,
-                mind => mind.ind.CourseId,
-                c => c.Id,
-                (mindc, c) => new { mindc, c }).
-            Join(this.dataContext.CourseCategories,
-                mindc => mindc.c.CourseCategoryId,
-                cc => cc.Id,
-                (mindccc, cc) => new { mindccc, cc }).
-            Where(result => result.mindccc.mindc.mi.UserId == userId).
-            Select(result => new
+            try
             {
-                Course = result.mindccc.c.CourseTitle,
-                Category = result.cc.Category,
-                Schedule = result.mindccc.c.Jadwal
-            }).ToListAsync();
+                var courseData = await this.dataContext.MasterInvoices.
+                Join(this.dataContext.InvoiceDetails,
+                    mi => mi.Id,
+                    ind => ind.MasterInvoiceId,
+                    (mi, ind) => new { mi, ind }).
+                Join(this.dataContext.Courses,
+                    mind => mind.ind.CourseId,
+                    c => c.Id,
+                    (mindc, c) => new { mindc, c }).
+                Join(this.dataContext.CourseCategories,
+                    mindc => mindc.c.CourseCategoryId,
+                    cc => cc.Id,
+                    (mindccc, cc) => new { mindccc, cc }).
+                Where(result => result.mindccc.mindc.mi.UserId == userId).
+                Select(result => new
+                {
+                    Course = result.mindccc.c.CourseTitle,
+                    Category = result.cc.Category,
+                    Schedule = result.mindccc.c.Jadwal
+                }).ToListAsync();
 
-            if (courseData.Count == 0)
-                return BadRequest("Not Found");
-            return Ok(courseData);
+                if (courseData.Count == 0)
+                    return BadRequest("Not Found");
+
+                return Ok(courseData);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");  
+            }
+            
         }
     }
 }

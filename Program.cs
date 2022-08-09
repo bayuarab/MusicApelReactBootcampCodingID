@@ -1,6 +1,7 @@
 global using SecondV.Models;
 global using SecondV.Data;
 global using Microsoft.EntityFrameworkCore;
+global using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
