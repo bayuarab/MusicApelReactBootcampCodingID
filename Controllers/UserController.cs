@@ -186,8 +186,8 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost("InvoiceDetails")]
-        public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetail invoiceDetail)
+        [HttpGet("Courses/{userId}")]
+        public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByUserID(int userId)
         {
             try
             {
