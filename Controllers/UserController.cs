@@ -128,6 +128,7 @@ namespace SecondV.Controllers
                 {
                     CourseId = result.caccc.c.Id,
                     Course = result.caccc.c.CourseTitle,
+                    CourseImage = result.caccc.c.CourseImage,
                     Category = result.cc.Category,
                     Schedule = result.caccc.c.Jadwal,
                     Price = result.caccc.c.Price,
@@ -207,6 +208,8 @@ namespace SecondV.Controllers
                 Where(result => result.mindccc.mindc.mi.UserId == userId).
                 Select(result => new
                 {
+                    CourseImage = result.mindccc.c.CourseImage,
+                    CourseId = result.mindccc.c.Id,
                     Course = result.mindccc.c.CourseTitle,
                     Category = result.cc.Category,
                     Schedule = result.mindccc.c.Jadwal
