@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SecondV.Controllers
 {
-  [ApiController]
+    [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
@@ -10,7 +10,7 @@ namespace SecondV.Controllers
 
         public UserController(DataContext dataContext)
         {
-            this.dataContext = dataContext;           
+            this.dataContext = dataContext;
         }
 
         [HttpGet]
@@ -22,19 +22,34 @@ namespace SecondV.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<List<User>>> UserLogin(User request)
         {
-            var valid = await this.dataContext.Users.
-            Where(result => result.Username == request.Username).
-            Select(result => new {
-                id = result.Id,
-                roles = result.roles
-            }).ToListAsync();
-            //var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.Username == request.Username);
-            if (valid.Count == 0)
-                return BadRequest("username not found");
-            // if (userValid.pass != request.Id)
-            //     return BadRequest("Not match password and email");
+            // var valid = await this.dataContext.Users.
+            // Where(result => result.Username == request.Username).
+            // Select(result => new {
+            //     id = result.Id,
+            //     roles = result.roles
+            // }).ToListAsync();
+            // return Ok(valid[0]);
+            //------------------------------------ Output id and roles only
 
-            return Ok(valid[0]);
+            var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+            if (userValid == null)
+                return BadRequest("username not found");
+            if (userValid.password != request.password)
+                return BadRequest("Wrong Password");
+
+            return Ok(userValid);
+        }
+
+        [HttpPost("CheckEmail")]
+        public async Task<ActionResult<List<User>>> CheckEmail(User request)
+        {
+            var checkEmail = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+            if (checkEmail == null)
+            {
+                return Ok("Email Ok");
+            }
+
+            return BadRequest("Registration Failed");
         }
 
         [HttpPost]
@@ -63,7 +78,7 @@ namespace SecondV.Controllers
 
             return Ok(await this.dataContext.InvoiceDetails.ToListAsync());
         }
-        
+
         [HttpGet("Cart/{userID}")]
         public async Task<ActionResult<Cart>> GetCartByUID(int userID)
         {
@@ -71,14 +86,14 @@ namespace SecondV.Controllers
             Join(this.dataContext.Courses,
                 ca => ca.CourseId,
                 c => c.Id,
-                (ca, c) => new {ca, c}).
+                (ca, c) => new { ca, c }).
             Join(this.dataContext.CourseCategories,
                 cac => cac.c.CourseCategoryId,
                 cc => cc.Id,
-                (caccc, cc) => new {caccc, cc}).
+                (caccc, cc) => new { caccc, cc }).
             Where(data => data.caccc.ca.UserId == userID).
-            Select(result => new {
-                CourseId = result.caccc.c.Id,
+            Select(result => new
+            {
                 Course = result.caccc.c.CourseTitle,
                 Category = result.cc.Category,
                 Schedule = result.caccc.c.Jadwal,
@@ -86,7 +101,7 @@ namespace SecondV.Controllers
                 Id = result.caccc.ca.Id
             }).
             ToListAsync();
-        
+
             if (userCart.Count == 0)
                 return BadRequest("Not Found");
             return Ok(userCart);
@@ -116,27 +131,28 @@ namespace SecondV.Controllers
 
         [HttpGet("Courses/{userId}")]
         public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByUserID(int userId)
-        {            
+        {
             var courseData = await this.dataContext.MasterInvoices.
             Join(this.dataContext.InvoiceDetails,
                 mi => mi.Id,
                 ind => ind.MasterInvoiceId,
-                (mi, ind) => new {mi, ind}).
+                (mi, ind) => new { mi, ind }).
             Join(this.dataContext.Courses,
                 mind => mind.ind.CourseId,
                 c => c.Id,
-                (mindc, c) => new {mindc, c}).
+                (mindc, c) => new { mindc, c }).
             Join(this.dataContext.CourseCategories,
                 mindc => mindc.c.CourseCategoryId,
                 cc => cc.Id,
-                (mindccc, cc) => new {mindccc, cc}).
+                (mindccc, cc) => new { mindccc, cc }).
             Where(result => result.mindccc.mindc.mi.UserId == userId).
-            Select(result => new { 
+            Select(result => new
+            {
                 Course = result.mindccc.c.CourseTitle,
                 Category = result.cc.Category,
                 Schedule = result.mindccc.c.Jadwal
             }).ToListAsync();
-            
+
             if (courseData.Count == 0)
                 return BadRequest("Not Found");
             return Ok(courseData);
