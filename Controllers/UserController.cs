@@ -16,8 +16,7 @@ namespace SecondV.Controllers
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetUser()
         {
-            // return Ok(await this.dataContext.Users.ToListAsync());
-            return Ok("Registrasi Sukses");
+            return Ok(await this.dataContext.Users.ToListAsync());
         }
 
         [HttpPost("Login")]
@@ -50,7 +49,8 @@ namespace SecondV.Controllers
             this.dataContext.Users.Add(user);
             await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.Users.ToListAsync());
+            // return Ok(await this.dataContext.Users.ToListAsync());
+            return Ok("Registrasi Sukses");
         }
 
         [HttpGet("Cart/{userID}")]
