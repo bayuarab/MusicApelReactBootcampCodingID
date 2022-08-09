@@ -16,7 +16,8 @@ namespace SecondV.Controllers
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetUser()
         {
-            return Ok(await this.dataContext.Users.ToListAsync());
+            // return Ok(await this.dataContext.Users.ToListAsync());
+            return Ok("Registrasi Sukses");
         }
 
         [HttpPost("Login")]
