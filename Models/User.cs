@@ -4,8 +4,8 @@ namespace SecondV.Models
     {
         public int Id { get; set; }
         public string? nama { get; set; }
-        public string email { get; set; }
-        public string password { get; set; }
+        public string? email { get; set; }
+        public string? password { get; set; }
         public string roles { get; set; } = "student";
     }
 }
