@@ -22,6 +22,10 @@ namespace SecondV.Controllers
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUsers(User user)
         {
+            var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == user.email);
+            if (validEmail != null)
+                return BadRequest("Email sudah terdaftar");    
+            
             this.dataContext.Users.Add(user);
             await this.dataContext.SaveChangesAsync();
 
@@ -31,22 +35,32 @@ namespace SecondV.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<List<User>>> UserLogin(User request)
         {
-            // var valid = await this.dataContext.Users.
-            // Where(result => result.Username == request.Username).
-            // Select(result => new {
-            //     id = result.Id,
-            //     roles = result.roles
-            // }).ToListAsync();
-            // return Ok(valid[0]);
-            //------------------------------------ Output id and roles only
-
             var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
             if (userValid == null)
-                return BadRequest("username not found");
+                return BadRequest("Account not found");
+            
             if (userValid.password != request.password)
                 return BadRequest("Wrong Password");
+            
+            var valid = await this.dataContext.Users.
+            Where(result => result.email == request.email).
+            Select(result => new {
+                id = result.Id,
+                roles = result.roles,
+                nama = result.nama
+            }).ToListAsync();
 
-            return Ok(userValid);
+            return Ok(valid[0]);
+
+            //------------------------------------ Output id and roles only
+
+            // var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+            // if (userValid == null)
+            //     return BadRequest("username not found");
+            // if (userValid.password != request.password)
+            //     return BadRequest("Wrong Password");
+
+            // return Ok(userValid);
         }
 
         [HttpPost("CheckEmail")]
@@ -67,9 +81,9 @@ namespace SecondV.Controllers
             try
             {   
                 var validId = await this.dataContext.MasterInvoices.FindAsync(masterInvoice.Id);
-                var validNoInvoice = await this.dataContext.MasterInvoices.FirstOrDefaultAsync(data => data.NoInvoice == masterInvoice.NoInvoice);
-                var validUserId = await this.dataContext.MasterInvoices.FindAsync(masterInvoice.UserId);
-                if(validId != null || validNoInvoice != null || validUserId == null)
+                // var validNoInvoice = await this.dataContext.MasterInvoices.FirstOrDefaultAsync(data => data.NoInvoice == masterInvoice.NoInvoice);
+                var validUserId = await this.dataContext.Users.FindAsync(masterInvoice.UserId);
+                if(validId != null || validUserId == null)
                     return BadRequest("Not valid data");
 
                 this.dataContext.MasterInvoices.Add(masterInvoice);
