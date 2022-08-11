@@ -33,6 +33,22 @@ namespace SecondV.Controllers
             return Ok(data);
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Course>> GetCourseById(int id)
+        {
+            try
+            {
+                var course = await this.dataContext.Courses.FindAsync(id);
+                if (course == null)
+                    return BadRequest("Not Found");
+                return Ok(course);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpGet("LandingPage")]
         public async Task<ActionResult<List<Course>>> GetClass()
         {
