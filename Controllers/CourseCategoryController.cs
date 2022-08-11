@@ -38,10 +38,14 @@ namespace SecondV.Controllers
         [HttpPost]
         public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory(CourseCategory courseCategory)
         {
+            var validCategory = await this.dataContext.CourseCategories.FirstOrDefaultAsync(data => data.Category == courseCategory.Category);
+            if (validCategory != null)
+                return BadRequest("Category sudah ada");
+
             this.dataContext.CourseCategories.Add(courseCategory);
             await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.CourseCategories.ToListAsync());
+            return Ok("Category berhasil ditambahkan");
         }
 
         [HttpPut]

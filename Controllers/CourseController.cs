@@ -57,6 +57,7 @@ namespace SecondV.Controllers
                     c => c.CourseCategoryId,
                     cc => cc.Id,
                     (c, cc) => new { c, cc }).
+                OrderByDescending(result => result.c.Id).
                 Select(result => new
                 {
                     result.c.Id,
@@ -72,10 +73,14 @@ namespace SecondV.Controllers
         [HttpPost]
         public async Task<ActionResult<List<Course>>> AddCourse(Course course)
         {
+            var validTitle = await this.dataContext.Courses.FirstOrDefaultAsync(data => data.CourseTitle == course.CourseTitle);
+            if (validTitle != null)
+                return BadRequest("Course sudah ada");
+
             this.dataContext.Courses.Add(course);
             await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.Courses.ToListAsync());
+            return Ok("Course berhasil ditambahkan");
         }
 
         [HttpPut]
@@ -93,6 +98,19 @@ namespace SecondV.Controllers
             course.CourseCategoryId = request.CourseCategoryId;
 
             await this.dataContext.SaveChangesAsync();
+            return Ok(await this.dataContext.Courses.ToListAsync());
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
+        {
+            var course = await this.dataContext.Courses.FindAsync(id);
+            if (course == null)
+                return BadRequest("Not Found");
+
+            this.dataContext.Courses.Remove(course);
+            await this.dataContext.SaveChangesAsync();
+
             return Ok(await this.dataContext.Courses.ToListAsync());
         }
     }
