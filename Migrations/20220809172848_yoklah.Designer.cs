@@ -11,8 +11,8 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220809022650_InitialFK")]
-    partial class InitialFK
+    [Migration("20220809172848_yoklah")]
+    partial class yoklah
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -116,7 +116,9 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NoInvoice")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -139,9 +141,12 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NoInvoice")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PurchaseDate")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Qty")

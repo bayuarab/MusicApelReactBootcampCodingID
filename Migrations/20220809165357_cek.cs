@@ -4,7 +4,7 @@
 
 namespace SecondV.Migrations
 {
-    public partial class reroute : Migration
+    public partial class cek : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -14,7 +14,9 @@ namespace SecondV.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Category = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    desc = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -27,7 +29,9 @@ namespace SecondV.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    nama = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    password = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     roles = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -42,6 +46,8 @@ namespace SecondV.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CourseTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CourseImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CourseDesc = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Jadwal = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<int>(type: "int", nullable: false),
                     CourseCategoryId = table.Column<int>(type: "int", nullable: false)
@@ -63,8 +69,8 @@ namespace SecondV.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    NoInvoice = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PurchaseDate = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NoInvoice = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PurchaseDate = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Qty = table.Column<int>(type: "int", nullable: false),
                     Cost = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false)
@@ -112,7 +118,7 @@ namespace SecondV.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    NoInvoice = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NoInvoice = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CourseId = table.Column<int>(type: "int", nullable: false),
                     MasterInvoiceId = table.Column<int>(type: "int", nullable: false)
                 },

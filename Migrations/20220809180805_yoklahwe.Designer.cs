@@ -11,8 +11,8 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220809014056_Try")]
-    partial class Try
+    [Migration("20220809180805_yoklahwe")]
+    partial class yoklahwe
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -38,6 +38,10 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Carts");
                 });
@@ -69,6 +73,8 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseCategoryId");
 
                     b.ToTable("Courses");
                 });
@@ -110,9 +116,15 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NoInvoice")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("MasterInvoiceId");
 
                     b.ToTable("InvoiceDetails");
                 });
@@ -129,9 +141,12 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NoInvoice")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PurchaseDate")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Qty")
@@ -141,6 +156,8 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("MasterInvoices");
                 });
@@ -154,14 +171,12 @@ namespace SecondV.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("nama")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("password")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("roles")
@@ -171,6 +186,66 @@ namespace SecondV.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SecondV.Models.Cart", b =>
+                {
+                    b.HasOne("SecondV.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecondV.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SecondV.Models.Course", b =>
+                {
+                    b.HasOne("SecondV.Models.CourseCategory", "CourseCategory")
+                        .WithMany()
+                        .HasForeignKey("CourseCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CourseCategory");
+                });
+
+            modelBuilder.Entity("SecondV.Models.InvoiceDetail", b =>
+                {
+                    b.HasOne("SecondV.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SecondV.Models.MasterInvoice", "MasterInvoice")
+                        .WithMany()
+                        .HasForeignKey("MasterInvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("MasterInvoice");
+                });
+
+            modelBuilder.Entity("SecondV.Models.MasterInvoice", b =>
+                {
+                    b.HasOne("SecondV.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

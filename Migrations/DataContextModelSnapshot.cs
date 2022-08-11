@@ -114,7 +114,9 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NoInvoice")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -137,9 +139,12 @@ namespace SecondV.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("NoInvoice")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PurchaseDate")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Qty")
