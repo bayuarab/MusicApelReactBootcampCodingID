@@ -62,6 +62,22 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Courses.ToListAsync());
         }
 
+        [HttpGet("categoryId")]
+        public async Task<ActionResult<List<Course>>> GetCourseByCategoryId(int courseCategoryId)
+        {
+            try
+            {
+                var course = await this.dataContext.Courses.FirstOrDefaultAsync(result => result.CourseCategoryId == courseCategoryId);
+                if (course == null)
+                    return BadRequest("Not Found");
+                return Ok(course);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpPut]
         public async Task<ActionResult<List<Course>>> Update(Course request)
         {

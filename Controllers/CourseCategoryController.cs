@@ -20,8 +20,11 @@ namespace SecondV.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory(CourseCategory courseCategory)
+        public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody]CourseCategory courseCategory)
         {
+            courseCategory.Category = courseCategory.Category;
+            courseCategory.image = courseCategory.image;
+            courseCategory.desc = courseCategory.desc;
             this.dataContext.CourseCategories.Add(courseCategory);
             await this.dataContext.SaveChangesAsync();
 
