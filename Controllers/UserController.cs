@@ -24,8 +24,8 @@ namespace SecondV.Controllers
         {
             var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == user.email);
             if (validEmail != null)
-                return BadRequest("Email sudah terdaftar");    
-            
+                return BadRequest("Email sudah terdaftar");
+
             this.dataContext.Users.Add(user);
             await this.dataContext.SaveChangesAsync();
 
@@ -37,14 +37,15 @@ namespace SecondV.Controllers
         {
             var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
             if (userValid == null)
-                return BadRequest("Account not found");
-            
+                return BadRequest("Akun tidak ditemukan");
+
             if (userValid.password != request.password)
-                return BadRequest("Wrong Password");
-            
+                return BadRequest("Password Salah");
+
             var valid = await this.dataContext.Users.
             Where(result => result.email == request.email).
-            Select(result => new {
+            Select(result => new
+            {
                 id = result.Id,
                 roles = result.roles,
                 nama = result.nama
@@ -69,30 +70,31 @@ namespace SecondV.Controllers
             var checkEmail = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
             if (checkEmail == null)
             {
-                return Ok("Email Ok");
+                return BadRequest("Email tidak ditemukan");
             }
 
-            return BadRequest("Registration Failed");
+            return Ok("Succes");
+
         }
 
         [HttpPost("MInvoice")]
         public async Task<ActionResult<List<MasterInvoice>>> AddMasterInvoice(MasterInvoice masterInvoice)
         {
             try
-            {   
+            {
                 var validId = await this.dataContext.MasterInvoices.FindAsync(masterInvoice.Id);
                 // var validNoInvoice = await this.dataContext.MasterInvoices.FirstOrDefaultAsync(data => data.NoInvoice == masterInvoice.NoInvoice);
                 var validUserId = await this.dataContext.Users.FindAsync(masterInvoice.UserId);
-                if(validId != null || validUserId == null)
+                if (validId != null || validUserId == null)
                     return BadRequest("Not valid data");
 
                 this.dataContext.MasterInvoices.Add(masterInvoice);
                 await this.dataContext.SaveChangesAsync();
                 var newMasterInvoice = this.dataContext.MasterInvoices.FirstOrDefault(result => result.NoInvoice == masterInvoice.NoInvoice);
-                return Ok(newMasterInvoice); 
+                return Ok(newMasterInvoice);
             }
 
-            catch 
+            catch
             {
                 return StatusCode(500, "Unknown error occurred");
             }
@@ -115,11 +117,11 @@ namespace SecondV.Controllers
                 this.dataContext.InvoiceDetails.Add(invoiceDetail);
                 await this.dataContext.SaveChangesAsync();
 
-                return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == invoiceDetail.NoInvoice).ToListAsync());    
+                return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == invoiceDetail.NoInvoice).ToListAsync());
             }
             catch
-        {
-                 return StatusCode(500, "Unknown error occurred");
+            {
+                return StatusCode(500, "Unknown error occurred");
             }
         }
 
@@ -153,7 +155,7 @@ namespace SecondV.Controllers
                 if (userCart.Count == 0)
                     return BadRequest("Not Found");
 
-                return Ok(userCart);    
+                return Ok(userCart);
             }
             catch
             {
@@ -169,7 +171,7 @@ namespace SecondV.Controllers
                 var userCart = await this.dataContext.Carts.FindAsync(id);
                 if (userCart == null)
                     return BadRequest("Not Found");
-                
+
                 if (userCart.UserId != UserId)
                     return BadRequest("Not valid data");
 
@@ -236,9 +238,9 @@ namespace SecondV.Controllers
             }
             catch
             {
-                return StatusCode(500, "Unknown error occurred");  
+                return StatusCode(500, "Unknown error occurred");
             }
-            
+
         }
     }
-    }
+}
