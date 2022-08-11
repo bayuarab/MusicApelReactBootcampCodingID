@@ -76,7 +76,7 @@ namespace SecondV.Controllers
                 var validCart = await this.dataContext.Carts.Where(data => data.UserId == cart.UserId).ToListAsync();
                 var statusExist = validCart.FirstOrDefault(exist => exist.CourseId == cart.CourseId);
                 if ((statusExist != null))
-                    return BadRequest("Not valid data");
+                    return BadRequest("course sudah ditambahkan ke keranjang!");
 
                 this.dataContext.Carts.Add(cart);
                 await this.dataContext.SaveChangesAsync();

@@ -63,7 +63,8 @@ namespace SecondV.Controllers
                     result.c.CourseTitle,
                     result.c.CourseImage,
                     result.c.Price,
-                    result.cc.Category
+                    result.cc.Category,
+                    CategoryId = result.cc.Id 
                 }).ToListAsync();
 
             return Ok(data);
@@ -78,7 +79,7 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Courses.ToListAsync());
         }
 
-        [HttpGet("categoryId")]
+        [HttpGet("categoryId/{courseCategoryId}")]
         public async Task<ActionResult<List<Course>>> GetCourseByCategoryId(int courseCategoryId)
         {
             try
