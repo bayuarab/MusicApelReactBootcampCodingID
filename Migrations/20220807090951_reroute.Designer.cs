@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SecondV.Data;
 
@@ -10,9 +11,10 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220807090951_reroute")]
+    partial class reroute
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,12 +57,6 @@ namespace SecondV.Migrations
                     b.Property<int>("CourseCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<string>("CourseDesc")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CourseImage")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CourseTitle")
                         .HasColumnType("nvarchar(max)");
 
@@ -86,12 +82,6 @@ namespace SecondV.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Category")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("desc")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("image")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -163,13 +153,7 @@ namespace SecondV.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("nama")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("password")
+                    b.Property<string>("Username")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("roles")
