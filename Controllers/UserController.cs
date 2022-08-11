@@ -13,6 +13,13 @@ namespace SecondV.Controllers
             this.dataContext = dataContext;
         }
 
+        public class InvoiceDetails
+        {
+            public string? NoInvoice { get; set; }
+            public int CourseId { get; set; }
+            public int MasterInvoiceId { get; set; }
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetUser()
         {
@@ -99,23 +106,36 @@ namespace SecondV.Controllers
         }
 
         [HttpPost("InvoiceDetails")]
-        public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetail invoiceDetail)
+        public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetails request)
         {
             try
             {
-                var validMasterId = await this.dataContext.MasterInvoices.FindAsync(invoiceDetail.MasterInvoiceId);
-                var validId = await this.dataContext.InvoiceDetails.FindAsync(invoiceDetail.Id);
-                var validCourseId = await this.dataContext.Courses.FindAsync(invoiceDetail.CourseId);
-                if ((validMasterId == null) || (validId != null) || (validCourseId == null))
+                var validMasterId = await this.dataContext.MasterInvoices.FindAsync(request.MasterInvoiceId);
+                if (validMasterId == null)
                     return BadRequest("Not valid data");
 
-                if (validMasterId.NoInvoice != invoiceDetail.NoInvoice)
+                var validCourse = await this.dataContext.Courses.FindAsync(request.CourseId);
+                if (validCourse == null)
                     return BadRequest("Not valid data");
 
-                this.dataContext.InvoiceDetails.Add(invoiceDetail);
+                var validCategory = await this.dataContext.CourseCategories.FirstAsync(data => data.Id == validCourse.CourseCategoryId);               
+                if (validCategory.Id != validCourse.CourseCategoryId)
+                    return BadRequest("Not valid data");
+
+                if (validMasterId.NoInvoice != request.NoInvoice)
+                    return BadRequest("Not valid data");
+
+                this.dataContext.InvoiceDetails.Add(entity: new InvoiceDetail {
+                    NoInvoice = request.NoInvoice,
+                    CourseCategory = validCategory.Category,
+                    Course = validCourse.CourseTitle,
+                    Schedule = validCourse.Jadwal,
+                    Price = validCourse.Price,
+                    MasterInvoiceId = request.MasterInvoiceId
+                });
                 await this.dataContext.SaveChangesAsync();
 
-                return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == invoiceDetail.NoInvoice).ToListAsync());    
+                return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == request.NoInvoice).ToListAsync());    
             }
             catch
         {
@@ -212,8 +232,8 @@ namespace SecondV.Controllers
                     ind => ind.MasterInvoiceId,
                     (mi, ind) => new { mi, ind }).
                 Join(this.dataContext.Courses,
-                    mind => mind.ind.CourseId,
-                    c => c.Id,
+                    mind => mind.ind.Course,
+                    c => c.CourseTitle,
                     (mindc, c) => new { mindc, c }).
                 Join(this.dataContext.CourseCategories,
                     mindc => mindc.c.CourseCategoryId,
