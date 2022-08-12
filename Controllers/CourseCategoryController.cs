@@ -36,7 +36,7 @@ namespace SecondV.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory(CourseCategory courseCategory)
+        public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody]CourseCategory courseCategory)
         {
             var validCategory = await this.dataContext.CourseCategories.FirstOrDefaultAsync(data => data.Category == courseCategory.Category);
             if (validCategory != null)

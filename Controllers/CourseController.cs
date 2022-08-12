@@ -64,7 +64,8 @@ namespace SecondV.Controllers
                     result.c.CourseTitle,
                     result.c.CourseImage,
                     result.c.Price,
-                    result.cc.Category
+                    result.cc.Category,
+                    CategoryId = result.cc.Id 
                 }).ToListAsync();
 
             return Ok(data);
@@ -81,6 +82,22 @@ namespace SecondV.Controllers
             await this.dataContext.SaveChangesAsync();
 
             return Ok("Course berhasil ditambahkan");
+        }
+
+        [HttpGet("categoryId/{courseCategoryId}")]
+        public async Task<ActionResult<List<Course>>> GetCourseByCategoryId(int courseCategoryId)
+        {
+            try
+            {
+                var course = await this.dataContext.Courses.FirstOrDefaultAsync(result => result.CourseCategoryId == courseCategoryId);
+                if (course == null)
+                    return BadRequest("Not Found");
+                return Ok(course);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpPut]
