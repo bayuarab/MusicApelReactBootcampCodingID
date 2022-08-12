@@ -35,6 +35,25 @@ namespace SecondV.Controllers
             }
         }
 
+        [HttpGet("Footer")]
+        public async Task<ActionResult<List<CourseCategory>>> GetFooterCourseCategory()
+        {
+            try
+            {
+                var result = await this.dataContext.CourseCategories.Select(result => new
+                {
+                    result.Id,
+                    result.Category, 
+                }).ToListAsync();
+
+                return Ok(result);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody]CourseCategory courseCategory)
         {
