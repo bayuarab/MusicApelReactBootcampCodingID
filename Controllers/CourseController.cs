@@ -27,7 +27,8 @@ namespace SecondV.Controllers
                     result.c.CourseTitle,
                     result.c.Jadwal,
                     result.c.Price,
-                    result.cc.Category
+                    result.cc.Category,
+                    courseCategoryId = result.cc.Id
                 }).ToListAsync();
 
             return Ok(data);
