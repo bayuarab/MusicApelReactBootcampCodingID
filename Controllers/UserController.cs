@@ -26,6 +26,19 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Users.ToListAsync());
         }
 
+        [HttpGet("AllUser")]
+        public async Task<ActionResult<List<User>>> GetAllUser()
+        {
+            var data = await this.dataContext.Users.
+            Where(data => data.roles != "admin").
+            Select(result => new {
+                result.nama,
+                result.email
+            }).ToListAsync();
+
+            return Ok(data);
+        }
+
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUsers(User user)
         {
@@ -37,6 +50,26 @@ namespace SecondV.Controllers
             await this.dataContext.SaveChangesAsync();
 
             return Ok("Registrasi sukses");
+        }
+
+        [HttpDelete("{userEmail}")]
+        public async Task<ActionResult<User>> DeleteUser(string userEmail)
+        {
+            try
+            {
+                var user = await this.dataContext.Users.FirstOrDefaultAsync(user => user.email == userEmail);
+                if (user == null)
+                    return NotFound("Not Found");
+
+                this.dataContext.Users.Remove(user);
+                await this.dataContext.SaveChangesAsync();
+
+                return Ok("Success");
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpPost("Login")]
