@@ -78,6 +78,10 @@ namespace SecondV.Controllers
                 if ((statusExist != null))
                     return BadRequest("course sudah ditambahkan ke keranjang!");
 
+                var validSchedule = await this.dataContext.Schedules.FindAsync(cart.ScheduleId);
+                if (validSchedule == null || validSchedule.CourseId != cart.CourseId)
+                    return BadRequest("Data not valid");
+
                 this.dataContext.Carts.Add(cart);
                 await this.dataContext.SaveChangesAsync();
 

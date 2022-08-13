@@ -11,8 +11,8 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220812112010_okelah")]
-    partial class okelah
+    [Migration("20220813183204_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -34,12 +34,17 @@ namespace SecondV.Migrations
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ScheduleId")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
+
+                    b.HasIndex("ScheduleId");
 
                     b.HasIndex("UserId");
 
@@ -64,9 +69,6 @@ namespace SecondV.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CourseTitle")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Jadwal")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Price")
@@ -151,6 +153,9 @@ namespace SecondV.Migrations
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
+                    b.Property<string>("Method")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NoInvoice")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -171,6 +176,28 @@ namespace SecondV.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("MasterInvoices");
+                });
+
+            modelBuilder.Entity("SecondV.Models.Schedule", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("jadwal")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("Schedules");
                 });
 
             modelBuilder.Entity("SecondV.Models.User", b =>
@@ -207,6 +234,12 @@ namespace SecondV.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SecondV.Models.Schedule", "Schedule")
+                        .WithMany()
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SecondV.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -214,6 +247,8 @@ namespace SecondV.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+
+                    b.Navigation("Schedule");
 
                     b.Navigation("User");
                 });
@@ -249,6 +284,17 @@ namespace SecondV.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SecondV.Models.Schedule", b =>
+                {
+                    b.HasOne("SecondV.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
                 });
 #pragma warning restore 612, 618
         }
