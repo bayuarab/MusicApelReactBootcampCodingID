@@ -41,7 +41,8 @@ namespace SecondV.Controllers
                         result.us.nama,
                         masterInvoiceId = result.mi.Id,
                         result.mi.NoInvoice,
-                        purchasedDate = result.mi.PurchaseDate
+                        purchasedDate = result.mi.PurchaseDate,
+                        result.mi.Method
                     }).ToListAsync();
 
                 
