@@ -206,6 +206,29 @@ namespace SecondV.Controllers
             }
         }
 
+        [HttpDelete("Cart/ByCourseId/{UserId}/{courseId}")]
+        public async Task<ActionResult<List<Cart>>> DeleteByCourseId(int UserId, int courseId)
+        {
+            try
+            {
+                var userCart = await this.dataContext.Carts.FirstOrDefaultAsync(data => data.UserId == UserId && data.CourseId == courseId);
+                if (userCart == null)
+                    return BadRequest("Not Found");
+
+                if (userCart.UserId != UserId)
+                    return BadRequest("Not valid data");
+
+                this.dataContext.Carts.Remove(userCart);
+                await this.dataContext.SaveChangesAsync();
+
+                return Ok(await this.dataContext.Carts.ToListAsync());
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpGet("Invoices/{userId}")]
         public async Task<ActionResult<MasterInvoice>> GetByUserID(int userId)
         {
@@ -218,6 +241,38 @@ namespace SecondV.Controllers
                 return Ok(masterInvoice);
             }
             catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
+        [HttpGet("InvoicesDetails/{UserId}/{noInvoice}")]
+        public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByNoInvoice(int UserId, string noInvoice)
+        {
+            try
+            {
+                var data = await this.dataContext.InvoiceDetails.
+                Join(this.dataContext.MasterInvoices,
+                    ind=> ind.MasterInvoiceId,
+                    mi => mi.Id,
+                    (ind, mi) => new {ind, mi}).
+                Where(result => result.ind.NoInvoice == noInvoice && result.mi.UserId == UserId).
+                Select(result => new { 
+                    NoInvoice = result.ind.NoInvoice,
+                    Course = result.ind.Course,
+                    Category = result.ind.CourseCategory,
+                    Schedule = result.ind.Schedule,
+                    Price = result.ind.Price,
+                    Cost = result.mi.Cost,
+                    purchasedDate = result.mi.PurchaseDate
+                }).ToListAsync();
+                
+                if (data.Count == 0)
+                    return BadRequest("Not Found");
+                    
+                return Ok(data);
+            }
+            catch 
             {
                 return StatusCode(500, "Unknown error occurred");
             }
