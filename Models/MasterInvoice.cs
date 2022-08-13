@@ -13,6 +13,7 @@ namespace SecondV.Models
         public int Qty { get; set; }
         [Required]
         public int Cost { get; set; }
+        public string? Method { get; set; }
         [Required]
         public int UserId { get; set; }
         public User? User { get; set; }
