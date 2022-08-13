@@ -38,22 +38,7 @@ namespace SecondV.Controllers
             }).ToListAsync();
 
             return Ok(data);
-        }
-
-        [HttpPut]
-        public async Task<ActionResult<List<User>>> Update(User request)
-        {
-            var user = await this.dataContext.Users.FindAsync(request.Id);
-            if (user == null)
-                return BadRequest("User not found");
-
-            user.nama = request.nama;
-            user.roles = request.roles;
-
-            await this.dataContext.SaveChangesAsync();
-            return Ok(await this.dataContext.Users.ToListAsync());
-        }
-        
+        }     
 
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUsers(User user)
@@ -180,16 +165,8 @@ namespace SecondV.Controllers
                 if (validCourse == null)
                     return BadRequest("Not valid data");
 
-                // var validCategory = await this.dataContext.CourseCategories.FirstOrDefaultAsync(data => data.Id == validCourse.CourseCategoryId);               
-                // if (validCategory.Id != validCourse.CourseCategoryId)
-                //     return BadRequest("Not valid data");
-
                 if (validMasterId.NoInvoice != request.NoInvoice)
                     return BadRequest("Not valid data");
-
-                // var validSchedule = await this.dataContext.Schedules.FindAsync(request.ScheduleId);
-                // if (validSchedule == null || validSchedule.CourseId != request.CourseId)
-                //     return BadRequest("Not valid data");
 
                 this.dataContext.InvoiceDetails.Add(entity: new InvoiceDetail {
                     NoInvoice = request.NoInvoice,
