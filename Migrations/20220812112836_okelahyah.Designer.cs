@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SecondV.Data;
 
@@ -10,9 +11,10 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220812112836_okelahyah")]
+    partial class okelahyah
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,17 +34,12 @@ namespace SecondV.Migrations
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ScheduleId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
-
-                    b.HasIndex("ScheduleId");
 
                     b.HasIndex("UserId");
 
@@ -154,9 +151,6 @@ namespace SecondV.Migrations
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
-                    b.Property<string>("Method")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("NoInvoice")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -230,12 +224,6 @@ namespace SecondV.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SecondV.Models.Schedule", "Schedule")
-                        .WithMany()
-                        .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("SecondV.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -243,8 +231,6 @@ namespace SecondV.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
-
-                    b.Navigation("Schedule");
 
                     b.Navigation("User");
                 });

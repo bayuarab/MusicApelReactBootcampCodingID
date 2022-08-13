@@ -4,7 +4,7 @@
 
 namespace SecondV.Migrations
 {
-    public partial class yoklah : Migration
+    public partial class yoklahyah : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

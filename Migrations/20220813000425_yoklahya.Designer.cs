@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SecondV.Data;
 
@@ -10,9 +11,10 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220813000425_yoklahya")]
+    partial class yoklahya
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -153,9 +155,6 @@ namespace SecondV.Migrations
 
                     b.Property<int>("Cost")
                         .HasColumnType("int");
-
-                    b.Property<string>("Method")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NoInvoice")
                         .IsRequired()
