@@ -191,17 +191,21 @@ namespace SecondV.Controllers
                 Join(this.dataContext.CourseCategories,
                     cac => cac.c.CourseCategoryId,
                     cc => cc.Id,
-                    (caccc, cc) => new { caccc, cc }).
-                Where(data => data.caccc.ca.UserId == userID).
+                    (cac, cc) => new { cac, cc }).
+                Join(this.dataContext.Schedules,
+                    cacc => cacc.cac.ca.ScheduleId,
+                    s => s.id,
+                    (caccs, s) => new {caccs,s}).
+                Where(data => data.caccs.cac.ca.UserId == userID).
                 Select(result => new
                 {
-                    CourseId = result.caccc.c.Id,
-                    Course = result.caccc.c.CourseTitle,
-                    CourseImage = result.caccc.c.CourseImage,
-                    Category = result.cc.Category,
-                    Schedule = result.caccc.c.Jadwal,
-                    Price = result.caccc.c.Price,
-                    Id = result.caccc.ca.Id
+                    CourseId = result.caccs.cac.c.Id,
+                    Course = result.caccs.cac.c.CourseTitle,
+                    CourseImage = result.caccs.cac.c.CourseImage,
+                    Category = result.caccs.cc.Category,
+                    Schedule = result.s.jadwal,
+                    Price = result.caccs.cac.c.Price,
+                    Id = result.caccs.cac.ca.Id
                 }).
                 ToListAsync();
 

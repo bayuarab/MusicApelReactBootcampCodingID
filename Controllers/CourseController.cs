@@ -90,8 +90,8 @@ namespace SecondV.Controllers
         {
             try
             {
-                var course = await this.dataContext.Courses.FirstOrDefaultAsync(result => result.CourseCategoryId == courseCategoryId);
-                if (course == null)
+                var course = await this.dataContext.Courses.Where(result => result.CourseCategoryId == courseCategoryId).ToListAsync();
+                if (course.Count == null)
                     return BadRequest("Not Found");
                 return Ok(course);
             }
