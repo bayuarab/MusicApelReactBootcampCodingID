@@ -66,7 +66,7 @@ namespace SecondV.Controllers
                     result.c.CourseImage,
                     result.c.Price,
                     result.cc.Category,
-                    CategoryId = result.cc.Id 
+                    CategoryId = result.cc.Id
                 }).ToListAsync();
 
             return Ok(data);
@@ -111,7 +111,7 @@ namespace SecondV.Controllers
             course.CourseTitle = request.CourseTitle;
             course.CourseImage = request.CourseImage;
             course.CourseDesc = request.CourseDesc;
-            // course.Jadwal = request.Jadwal;
+            course.Jadwal = request.Jadwal;
             course.Price = request.Price;
             course.CourseCategoryId = request.CourseCategoryId;
 
@@ -119,7 +119,7 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Courses.ToListAsync());
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
             var course = await this.dataContext.Courses.FindAsync(id);
