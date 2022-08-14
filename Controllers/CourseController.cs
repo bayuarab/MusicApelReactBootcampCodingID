@@ -123,10 +123,6 @@ namespace SecondV.Controllers
             course.CourseTitle = request.CourseTitle;
             course.CourseImage = request.CourseImage;
             course.CourseDesc = request.CourseDesc;
-<<<<<<<<< Temporary merge branch 1
-            // course.Jadwal = request.Jadwal;
-=========
->>>>>>>>> Temporary merge branch 2
             course.Price = request.Price;
             course.CourseCategoryId = request.CourseCategoryId;
 
