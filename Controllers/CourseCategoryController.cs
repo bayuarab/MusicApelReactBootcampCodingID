@@ -43,7 +43,7 @@ namespace SecondV.Controllers
                 var result = await this.dataContext.CourseCategories.Select(result => new
                 {
                     result.Id,
-                    result.Category, 
+                    result.Category,
                 }).ToListAsync();
 
                 return Ok(result);
@@ -55,7 +55,7 @@ namespace SecondV.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody]CourseCategory courseCategory)
+        public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody] CourseCategory courseCategory)
         {
             var validCategory = await this.dataContext.CourseCategories.FirstOrDefaultAsync(data => data.Category == courseCategory.Category);
             if (validCategory != null)
@@ -78,11 +78,18 @@ namespace SecondV.Controllers
             courseCat.image = request.image;
             courseCat.desc = request.desc;
 
+            var valid = await this.dataContext.CourseCategories.
+            Where(result => result.Category == request.Category).ToListAsync();
+            if (valid.Count >= 1)
+            {
+                return BadRequest("Failed");
+            }
+
             await this.dataContext.SaveChangesAsync();
             return Ok(await this.dataContext.CourseCategories.ToListAsync());
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
             var courseCategory = await this.dataContext.CourseCategories.FindAsync(id);
