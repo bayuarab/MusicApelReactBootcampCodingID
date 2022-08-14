@@ -111,7 +111,7 @@ namespace SecondV.Controllers
             course.CourseTitle = request.CourseTitle;
             course.CourseImage = request.CourseImage;
             course.CourseDesc = request.CourseDesc;
-            course.Jadwal = request.Jadwal;
+            // course.Jadwal = request.Jadwal;
             course.Price = request.Price;
             course.CourseCategoryId = request.CourseCategoryId;
 
