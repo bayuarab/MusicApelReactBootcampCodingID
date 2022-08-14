@@ -17,6 +17,17 @@ namespace SecondV.Controllers
         {
             return Ok(await this.dataContext.Schedules.ToListAsync());
         }
+
+        [HttpGet("ByCourseId/{courseId}")]
+        public async Task<ActionResult<List<Schedule>>> GetScheduleByCourseId(int courseId)
+        {
+            var data = await this.dataContext.Schedules.Where(data => data.CourseId == courseId).ToListAsync();
+            if (data.Count == 0)
+                return NotFound("Not Found");
+
+            return Ok(data);
+        }
+
         [HttpPost]
         public async Task<ActionResult<List<Schedule>>> PostSchedule([FromBody] Schedule schedule)
         {
