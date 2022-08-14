@@ -66,7 +66,7 @@ namespace SecondV.Controllers
                     result.c.CourseImage,
                     result.c.Price,
                     result.cc.Category,
-                    CategoryId = result.cc.Id 
+                    CategoryId = result.cc.Id
                 }).ToListAsync();
 
             return Ok(data);
@@ -78,6 +78,10 @@ namespace SecondV.Controllers
             var validTitle = await this.dataContext.Courses.FirstOrDefaultAsync(data => data.CourseTitle == course.CourseTitle);
             if (validTitle != null)
                 return BadRequest("Course sudah ada");
+
+            var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
+            if (validCategory == null)
+                return BadRequest("Kategori tidak tersedia");
 
             this.dataContext.Courses.Add(course);
             await this.dataContext.SaveChangesAsync();
@@ -106,12 +110,19 @@ namespace SecondV.Controllers
         {
             var course = await this.dataContext.Courses.FindAsync(request.Id);
             if (course == null)
-                return BadRequest("User not found");
+                return NotFound("Course not found");
+            
+            var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
+            if (valid.Count >= 1)
+                return BadRequest("Kursus dengan judul serupa ditemukan");
+            
+            var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
+            if (validCategory == null)
+                return BadRequest("Kategori tidak tersedia");
 
             course.CourseTitle = request.CourseTitle;
             course.CourseImage = request.CourseImage;
             course.CourseDesc = request.CourseDesc;
-            // course.Jadwal = request.Jadwal;
             course.Price = request.Price;
             course.CourseCategoryId = request.CourseCategoryId;
 
@@ -119,7 +130,7 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Courses.ToListAsync());
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
             var course = await this.dataContext.Courses.FindAsync(id);
