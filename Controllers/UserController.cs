@@ -17,6 +17,7 @@ namespace SecondV.Controllers
         {
             public string? NoInvoice { get; set; }
             public int CourseId { get; set; }
+            public string? Schedule { get; set; }
             public int MasterInvoiceId { get; set; }
         }
 
@@ -37,7 +38,7 @@ namespace SecondV.Controllers
             }).ToListAsync();
 
             return Ok(data);
-        }
+        }     
 
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUsers(User user)
@@ -149,12 +150,19 @@ namespace SecondV.Controllers
                 if (validMasterId == null)
                     return BadRequest("Not valid data");
 
-                var validCourse = await this.dataContext.Courses.FindAsync(request.CourseId);
-                if (validCourse == null)
-                    return BadRequest("Not valid data");
+                var validCourse = await this.dataContext.Courses.
+                Join(this.dataContext.CourseCategories,
+                    c => c.CourseCategoryId,
+                    cc => cc.Id,
+                    (c , cc) => new {c, cc}).
+                Select(result => new {
+                    result.c.Id,
+                    result.c.CourseTitle,
+                    result.cc.Category,
+                    result.c.Price
+                }).FirstOrDefaultAsync( data => data.Id == request.CourseId);
 
-                var validCategory = await this.dataContext.CourseCategories.FirstAsync(data => data.Id == validCourse.CourseCategoryId);               
-                if (validCategory.Id != validCourse.CourseCategoryId)
+                if (validCourse == null)
                     return BadRequest("Not valid data");
 
                 if (validMasterId.NoInvoice != request.NoInvoice)
@@ -162,9 +170,9 @@ namespace SecondV.Controllers
 
                 this.dataContext.InvoiceDetails.Add(entity: new InvoiceDetail {
                     NoInvoice = request.NoInvoice,
-                    CourseCategory = validCategory.Category,
+                    CourseCategory = validCourse.Category,
                     Course = validCourse.CourseTitle,
-                    Schedule = validCourse.Jadwal,
+                    Schedule = request.Schedule,
                     Price = validCourse.Price,
                     MasterInvoiceId = request.MasterInvoiceId
                 });
@@ -340,7 +348,7 @@ namespace SecondV.Controllers
                     CourseId = result.mindccc.c.Id,
                     Course = result.mindccc.c.CourseTitle,
                     Category = result.cc.Category,
-                    Schedule = result.mindccc.c.Jadwal
+                    Schedule = result.mindccc.mindc.ind.Schedule
                 }).ToListAsync();
 
                 if (courseData.Count == 0)
