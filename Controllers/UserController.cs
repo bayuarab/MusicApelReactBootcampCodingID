@@ -17,7 +17,7 @@ namespace SecondV.Controllers
         {
             public string? NoInvoice { get; set; }
             public int CourseId { get; set; }
-            public string? Schedule { get; set; }
+            public int ScheduleId { get; set; }
             public int MasterInvoiceId { get; set; }
         }
 
@@ -144,6 +144,7 @@ namespace SecondV.Controllers
         [HttpPost("InvoiceDetails")]
         public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetails request)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var validMasterId = await this.dataContext.MasterInvoices.FindAsync(request.MasterInvoiceId);
@@ -165,18 +166,33 @@ namespace SecondV.Controllers
                 if (validCourse == null)
                     return BadRequest("Not valid data");
 
+                var validSchedule = await this.dataContext.Schedules.FindAsync(request.ScheduleId);
+                if (validSchedule == null)
+                    return BadRequest("Not valid data");
+
                 if (validMasterId.NoInvoice != request.NoInvoice)
                     return BadRequest("Not valid data");
+                
 
                 this.dataContext.InvoiceDetails.Add(entity: new InvoiceDetail {
                     NoInvoice = request.NoInvoice,
                     CourseCategory = validCourse.Category,
                     Course = validCourse.CourseTitle,
-                    Schedule = request.Schedule,
+                    Schedule = validSchedule.jadwal,
                     Price = validCourse.Price,
                     MasterInvoiceId = request.MasterInvoiceId
                 });
+
+                this.dataContext.UserCourses.Add(entity: new UserCourse {
+                    CourseId = request.CourseId,
+                    ScheduleId = request.ScheduleId,
+                    UserId = validMasterId.UserId,
+                });
+
                 await this.dataContext.SaveChangesAsync();
+                // await this.dataContext.SaveChangesAsync();
+
+                await dbContextTransaction.CommitAsync();
 
                 return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == request.NoInvoice).ToListAsync());    
             }
@@ -185,6 +201,26 @@ namespace SecondV.Controllers
                 return StatusCode(500, "Unknown error occurred");
             }
         }
+
+        // [HttpPost("Course")]
+        // public async Task<ActionResult<List<Course>>> AddUserCourses(UserCourse request)
+        // {
+        //     try
+        //     {
+        //         var validUser = this.dataContext.Users.FindAsync(request.UserId);
+        //         if (validUser == null)
+        //             return BadRequest("Not valid data");
+                    
+        //         var validCourse = this.dataContext.Courses.FindAsync(request.UserId);
+        //         if (validUser == null)
+        //             return BadRequest("Not valid data");
+        //     }
+        //     catch (System.Exception)
+        //     {
+                
+        //         throw;
+        //     }
+        // }
 
         [HttpGet("Cart/{userID}")]
         public async Task<ActionResult<Cart>> GetCartByUID(int userID)
@@ -212,6 +248,7 @@ namespace SecondV.Controllers
                     CourseImage = result.caccs.cac.c.CourseImage,
                     Category = result.caccs.cc.Category,
                     Schedule = result.s.jadwal,
+                    ScheduleId = result.s.id,
                     Price = result.caccs.cac.c.Price,
                     Id = result.caccs.cac.ca.Id
                 }).
@@ -324,31 +361,31 @@ namespace SecondV.Controllers
         }
 
         [HttpGet("Courses/{userId}")]
-        public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByUserID(int userId)
+        public async Task<ActionResult<UserCourse>> GetCourseByUserID(int userId)
         {
             try
             {
-                var courseData = await this.dataContext.MasterInvoices.
-                Join(this.dataContext.InvoiceDetails,
-                    mi => mi.Id,
-                    ind => ind.MasterInvoiceId,
-                    (mi, ind) => new { mi, ind }).
+                var courseData = await this.dataContext.UserCourses.
                 Join(this.dataContext.Courses,
-                    mind => mind.ind.Course,
-                    c => c.CourseTitle,
-                    (mindc, c) => new { mindc, c }).
+                    uc => uc.CourseId,
+                    c => c.Id,
+                    (uc, c) => new { uc, c}).
                 Join(this.dataContext.CourseCategories,
-                    mindc => mindc.c.CourseCategoryId,
+                    ucc => ucc.c.CourseCategoryId,
                     cc => cc.Id,
-                    (mindccc, cc) => new { mindccc, cc }).
-                Where(result => result.mindccc.mindc.mi.UserId == userId).
+                    (ucc, cc) => new { ucc, cc}).
+                Join(this.dataContext.Schedules,
+                    ucccc => ucccc.ucc.uc.ScheduleId,
+                    s => s.id,
+                    (ucccc, s) => new { ucccc, s}).
+                Where(data => data.ucccc.ucc.uc.UserId == userId).
                 Select(result => new
                 {
-                    CourseImage = result.mindccc.c.CourseImage,
-                    CourseId = result.mindccc.c.Id,
-                    Course = result.mindccc.c.CourseTitle,
-                    Category = result.cc.Category,
-                    Schedule = result.mindccc.mindc.ind.Schedule
+                    CourseImage = result.ucccc.ucc.c.CourseImage,
+                    CourseId = result.ucccc.ucc.c.Id,
+                    Course = result.ucccc.ucc.c.CourseTitle,
+                    Category = result.ucccc.cc.Category,
+                    Schedule = result.s.jadwal
                 }).ToListAsync();
 
                 if (courseData.Count == 0)
@@ -360,7 +397,45 @@ namespace SecondV.Controllers
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-
         }
+
+        // [HttpGet("Courses/{userId}")]
+        // public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByUserID(int userId)
+        // {
+        //     try
+        //     {
+        //         var courseData = await this.dataContext.MasterInvoices.
+        //         Join(this.dataContext.InvoiceDetails,
+        //             mi => mi.Id,
+        //             ind => ind.MasterInvoiceId,
+        //             (mi, ind) => new { mi, ind }).
+        //         Join(this.dataContext.Courses,
+        //             mind => mind.ind.Course,
+        //             c => c.CourseTitle,
+        //             (mindc, c) => new { mindc, c }).
+        //         Join(this.dataContext.CourseCategories,
+        //             mindc => mindc.c.CourseCategoryId,
+        //             cc => cc.Id,
+        //             (mindccc, cc) => new { mindccc, cc }).
+        //         Where(result => result.mindccc.mindc.mi.UserId == userId).
+        //         Select(result => new
+        //         {
+        //             CourseImage = result.mindccc.c.CourseImage,
+        //             CourseId = result.mindccc.c.Id,
+        //             Course = result.mindccc.c.CourseTitle,
+        //             Category = result.cc.Category,
+        //             Schedule = result.mindccc.mindc.ind.Schedule
+        //         }).ToListAsync();
+
+        //         if (courseData.Count == 0)
+        //             return BadRequest("Not Found");
+
+        //         return Ok(courseData);
+        //     }
+        //     catch
+        //     {
+        //         return StatusCode(500, "Unknown error occurred");
+        //     }
+        // }
     }
 }

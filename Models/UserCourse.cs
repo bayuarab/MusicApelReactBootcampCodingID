@@ -1,6 +1,6 @@
 namespace SecondV.Models
 {
-  public class Cart
+    public class UserCourse
     {
         public int Id { get; set; }
         [Required(ErrorMessage = "Not valid data")]
@@ -8,6 +8,7 @@ namespace SecondV.Models
         public Course? Course { get; set; }
         public int ScheduleId { get; set; }
         public Schedule? Schedule { get; set; }
+        [Required(ErrorMessage = "Not valid data")]
         public int UserId { get; set; }
         public User? User { get; set; }
     }
