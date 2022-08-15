@@ -18,6 +18,26 @@ namespace SecondV.Controllers
             return Ok(await this.dataContext.Schedules.ToListAsync());
         }
 
+        [HttpGet("Admin")]
+        public async Task<ActionResult<List<Schedule>>> Get()
+        {
+            var data = await this.dataContext.Schedules.
+            Join(this.dataContext.Courses,
+                s => s.CourseId,
+                c => c.Id,
+                (s, c) => new { s, c }).
+            OrderBy(result => result.s.CourseId).
+            Select(result => new
+            {
+                result.c.CourseTitle,
+                result.s.jadwal,
+                result.s.id,
+                result.s.CourseId
+            }).ToListAsync();
+
+            return Ok(data);
+        }
+
         [HttpGet("ByCourseId/{courseId}")]
         public async Task<ActionResult<List<Schedule>>> GetScheduleByCourseId(int courseId)
         {
@@ -40,7 +60,7 @@ namespace SecondV.Controllers
 
             return Ok("Jadwal berhasil ditambahkan");
         }
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<List<Schedule>>> Delete(int id)
         {
             var schedule = await this.dataContext.Schedules.FindAsync(id);
