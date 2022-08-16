@@ -4,7 +4,7 @@
 
 namespace SecondV.Migrations
 {
-    public partial class coba : Migration
+    public partial class usercourse : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -24,6 +24,23 @@ namespace SecondV.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Courses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CourseTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CourseImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CourseDesc = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Price = table.Column<int>(type: "int", nullable: false),
+                    CourseCategoryId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Courses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -40,24 +57,21 @@ namespace SecondV.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Courses",
+                name: "Schedules",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CourseTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CourseImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CourseDesc = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Price = table.Column<int>(type: "int", nullable: false),
-                    CourseCategoryId = table.Column<int>(type: "int", nullable: false)
+                    jadwal = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CourseId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Courses", x => x.Id);
+                    table.PrimaryKey("PK_Schedules", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Courses_CourseCategories_CourseCategoryId",
-                        column: x => x.CourseCategoryId,
-                        principalTable: "CourseCategories",
+                        name: "FK_Schedules_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -82,50 +96,6 @@ namespace SecondV.Migrations
                         name: "FK_MasterInvoices_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Schedules",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    jadwal = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CourseId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Schedules", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_Schedules_Courses_CourseId",
-                        column: x => x.CourseId,
-                        principalTable: "Courses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "InvoiceDetails",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    NoInvoice = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Course = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CourseCategory = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Schedule = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<int>(type: "int", nullable: false),
-                    MasterInvoiceId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InvoiceDetails", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_InvoiceDetails_MasterInvoices_MasterInvoiceId",
-                        column: x => x.MasterInvoiceId,
-                        principalTable: "MasterInvoices",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -163,6 +133,63 @@ namespace SecondV.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserCourses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CourseId = table.Column<int>(type: "int", nullable: false),
+                    ScheduleId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserCourses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserCourses_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserCourses_Schedules_ScheduleId",
+                        column: x => x.ScheduleId,
+                        principalTable: "Schedules",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_UserCourses_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InvoiceDetails",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    NoInvoice = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Course = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CourseCategory = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Schedule = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Price = table.Column<int>(type: "int", nullable: false),
+                    MasterInvoiceId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoiceDetails_MasterInvoices_MasterInvoiceId",
+                        column: x => x.MasterInvoiceId,
+                        principalTable: "MasterInvoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_CourseId",
                 table: "Carts",
@@ -179,11 +206,6 @@ namespace SecondV.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Courses_CourseCategoryId",
-                table: "Courses",
-                column: "CourseCategoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_InvoiceDetails_MasterInvoiceId",
                 table: "InvoiceDetails",
                 column: "MasterInvoiceId");
@@ -197,6 +219,21 @@ namespace SecondV.Migrations
                 name: "IX_Schedules_CourseId",
                 table: "Schedules",
                 column: "CourseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserCourses_CourseId",
+                table: "UserCourses",
+                column: "CourseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserCourses_ScheduleId",
+                table: "UserCourses",
+                column: "ScheduleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserCourses_UserId",
+                table: "UserCourses",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -205,22 +242,25 @@ namespace SecondV.Migrations
                 name: "Carts");
 
             migrationBuilder.DropTable(
+                name: "CourseCategories");
+
+            migrationBuilder.DropTable(
                 name: "InvoiceDetails");
 
             migrationBuilder.DropTable(
-                name: "Schedules");
+                name: "UserCourses");
 
             migrationBuilder.DropTable(
                 name: "MasterInvoices");
 
             migrationBuilder.DropTable(
-                name: "Courses");
+                name: "Schedules");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "CourseCategories");
+                name: "Courses");
         }
     }
 }
