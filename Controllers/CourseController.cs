@@ -111,11 +111,11 @@ namespace SecondV.Controllers
             var course = await this.dataContext.Courses.FindAsync(request.Id);
             if (course == null)
                 return NotFound("Course not found");
-            
+
             var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
             if (valid.Count >= 1)
                 return BadRequest("Kursus dengan judul serupa ditemukan");
-            
+
             var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
             if (validCategory == null)
                 return BadRequest("Kategori tidak tersedia");
