@@ -4,7 +4,7 @@
 
 namespace SecondV.Migrations
 {
-    public partial class oklahh : Migration
+    public partial class coba : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -48,7 +48,6 @@ namespace SecondV.Migrations
                     CourseTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CourseImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CourseDesc = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Jadwal = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Price = table.Column<int>(type: "int", nullable: false),
                     CourseCategoryId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -73,6 +72,7 @@ namespace SecondV.Migrations
                     PurchaseDate = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Qty = table.Column<int>(type: "int", nullable: false),
                     Cost = table.Column<int>(type: "int", nullable: false),
+                    Method = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -87,27 +87,21 @@ namespace SecondV.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Carts",
+                name: "Schedules",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CourseId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    jadwal = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CourseId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Carts", x => x.Id);
+                    table.PrimaryKey("PK_Schedules", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Carts_Courses_CourseId",
+                        name: "FK_Schedules_Courses_CourseId",
                         column: x => x.CourseId,
                         principalTable: "Courses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Carts_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -136,10 +130,48 @@ namespace SecondV.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Carts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CourseId = table.Column<int>(type: "int", nullable: false),
+                    ScheduleId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Carts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Carts_Courses_CourseId",
+                        column: x => x.CourseId,
+                        principalTable: "Courses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Carts_Schedules_ScheduleId",
+                        column: x => x.ScheduleId,
+                        principalTable: "Schedules",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_Carts_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_CourseId",
                 table: "Carts",
                 column: "CourseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Carts_ScheduleId",
+                table: "Carts",
+                column: "ScheduleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_UserId",
@@ -160,6 +192,11 @@ namespace SecondV.Migrations
                 name: "IX_MasterInvoices_UserId",
                 table: "MasterInvoices",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Schedules_CourseId",
+                table: "Schedules",
+                column: "CourseId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -171,16 +208,19 @@ namespace SecondV.Migrations
                 name: "InvoiceDetails");
 
             migrationBuilder.DropTable(
-                name: "Courses");
+                name: "Schedules");
 
             migrationBuilder.DropTable(
                 name: "MasterInvoices");
 
             migrationBuilder.DropTable(
-                name: "CourseCategories");
+                name: "Courses");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "CourseCategories");
         }
     }
 }

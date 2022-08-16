@@ -69,9 +69,6 @@ namespace SecondV.Migrations
                     b.Property<string>("CourseTitle")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Jadwal")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Price")
                         .HasColumnType("int");
 
@@ -154,6 +151,9 @@ namespace SecondV.Migrations
                     b.Property<int>("Cost")
                         .HasColumnType("int");
 
+                    b.Property<string>("Method")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NoInvoice")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -184,11 +184,16 @@ namespace SecondV.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
 
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
                     b.Property<string>("jadwal")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("id");
+
+                    b.HasIndex("CourseId");
 
                     b.ToTable("Schedules");
                 });
@@ -277,6 +282,17 @@ namespace SecondV.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SecondV.Models.Schedule", b =>
+                {
+                    b.HasOne("SecondV.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
                 });
 #pragma warning restore 612, 618
         }

@@ -25,7 +25,7 @@ namespace SecondV.Controllers
                 {
                     result.c.Id,
                     result.c.CourseTitle,
-                    result.c.Jadwal,
+                    // result.c.Jadwal,
                     result.c.Price,
                     result.cc.Category,
                     courseCategoryId = result.cc.Id
@@ -91,7 +91,7 @@ namespace SecondV.Controllers
             try
             {
                 var course = await this.dataContext.Courses.Where(result => result.CourseCategoryId == courseCategoryId).ToListAsync();
-                if (course.Count == null)
+                if (course.Count == 0)
                     return BadRequest("Not Found");
                 return Ok(course);
             }
@@ -111,6 +111,7 @@ namespace SecondV.Controllers
             course.CourseTitle = request.CourseTitle;
             course.CourseImage = request.CourseImage;
             course.CourseDesc = request.CourseDesc;
+            // course.Jadwal = request.Jadwal;
             course.Price = request.Price;
             course.CourseCategoryId = request.CourseCategoryId;
 
