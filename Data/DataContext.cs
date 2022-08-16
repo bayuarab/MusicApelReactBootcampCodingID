@@ -19,5 +19,7 @@ namespace SecondV.Data
         public DbSet<Schedule> Schedules { get; set; }
 
         public DbSet<UserCourse> UserCourses { get; set; }
+
+        public DbSet<PaymentMethod> PaymentMethods { get; set; }
     }
 }
