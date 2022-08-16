@@ -108,26 +108,40 @@ namespace SecondV.Controllers
         [HttpPut]
         public async Task<ActionResult<List<Course>>> Update(Course request)
         {
-            var course = await this.dataContext.Courses.FindAsync(request.Id);
-            if (course == null)
-                return NotFound("Course not found");
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+            try
+            {
+                var course = await this.dataContext.Courses.FindAsync(request.Id);
+                if (course == null)
+                    return NotFound("Course not found");
 
-            var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
-            if (valid.Count >= 1)
-                return BadRequest("Kursus dengan judul serupa ditemukan");
+                var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
+                if (validCategory == null)
+                    return BadRequest("Kategori tidak tersedia");
 
-            var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
-            if (validCategory == null)
-                return BadRequest("Kategori tidak tersedia");
+                course.CourseTitle = request.CourseTitle;
+                course.CourseImage = request.CourseImage;
+                course.CourseDesc = request.CourseDesc;
+                course.Price = request.Price;
+                course.CourseCategoryId = request.CourseCategoryId;
 
-            course.CourseTitle = request.CourseTitle;
-            course.CourseImage = request.CourseImage;
-            course.CourseDesc = request.CourseDesc;
-            course.Price = request.Price;
-            course.CourseCategoryId = request.CourseCategoryId;
+                await this.dataContext.SaveChangesAsync();
 
-            await this.dataContext.SaveChangesAsync();
-            return Ok(await this.dataContext.Courses.ToListAsync());
+                 var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
+                if (valid.Count > 1) {
+                    await dbContextTransaction.RollbackAsync(); 
+                    return BadRequest("Kursus dengan judul serupa ditemukan");
+                }
+
+                await dbContextTransaction.CommitAsync();
+
+                return Ok(await this.dataContext.Courses.ToListAsync());
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+            
         }
 
         [HttpDelete("{id}")]
