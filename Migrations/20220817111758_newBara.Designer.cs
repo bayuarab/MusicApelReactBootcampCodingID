@@ -12,8 +12,8 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220815153604_AddPaymentMethod")]
-    partial class AddPaymentMethod
+    [Migration("20220817111758_newBara")]
+    partial class newBara
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -284,7 +284,7 @@ namespace SecondV.Migrations
                     b.HasOne("SecondV.Models.Schedule", "Schedule")
                         .WithMany()
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SecondV.Models.User", "User")
