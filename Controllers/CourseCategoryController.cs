@@ -75,7 +75,7 @@ namespace SecondV.Controllers
             {
                 var courseCat = await this.dataContext.CourseCategories.FindAsync(request.Id);
                 if (courseCat == null)
-                    return BadRequest("User not found");
+                    return BadRequest("Category not found");
 
                 courseCat.Category = request.Category;
                 courseCat.image = request.image;
@@ -85,20 +85,21 @@ namespace SecondV.Controllers
 
                 var valid = await this.dataContext.CourseCategories.
                 Where(result => result.Category == request.Category).ToListAsync();
-                if (valid.Count > 1) {
-                    await dbContextTransaction.RollbackAsync();    
+                if (valid.Count > 1)
+                {
+                    await dbContextTransaction.RollbackAsync();
                     return BadRequest("Failed (Rollback)");
                 }
 
                 await dbContextTransaction.CommitAsync();
 
-                return Ok(await this.dataContext.CourseCategories.ToListAsync());    
+                return Ok(await this.dataContext.CourseCategories.ToListAsync());
             }
             catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-            
+
         }
 
         [HttpDelete("{id}")]
