@@ -51,21 +51,34 @@ namespace SecondV.Controllers
         [HttpPost]
         public async Task<ActionResult<List<Schedule>>> PostSchedule([FromBody] Schedule schedule)
         {
-            var validSchedule = await this.dataContext.Schedules.FirstOrDefaultAsync(data => data.jadwal == schedule.jadwal);
+            var validCourse = await this.dataContext.Courses.FindAsync(schedule.CourseId);
+            if (validCourse == null)
+                return NotFound("Kelas tidak ditemukan");
+
+            var validSchedule = await this.dataContext.Schedules.Where(data => data.CourseId == schedule.CourseId).FirstOrDefaultAsync(data => data.jadwal == schedule.jadwal);
             if (validSchedule != null)
                 return BadRequest("Jadwal sudah ada");
 
             this.dataContext.Schedules.Add(schedule);
             await this.dataContext.SaveChangesAsync();
 
-            return Ok("Jadwal berhasil ditambahkan");
+            var result = new {
+                message = "Jadwal berhasil ditambahkan pada kelas",
+                course = validCourse.CourseTitle
+            };
+
+            return Ok(result);
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<Schedule>>> Delete(int id)
         {
             var schedule = await this.dataContext.Schedules.FindAsync(id);
             if (schedule == null)
-                return BadRequest("Not Found");
+                return NotFound("Not Found");
+
+            var usedSchedule = await this.dataContext.UserCourses.FirstOrDefaultAsync(data => data.ScheduleId == id);
+            if (usedSchedule != null)
+                return BadRequest("Cannot delete used schedule");
 
             this.dataContext.Schedules.Remove(schedule);
             await this.dataContext.SaveChangesAsync();

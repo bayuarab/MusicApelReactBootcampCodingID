@@ -70,23 +70,35 @@ namespace SecondV.Controllers
         [HttpPut]
         public async Task<ActionResult<List<CourseCategory>>> Update(CourseCategory request)
         {
-            var courseCat = await this.dataContext.CourseCategories.FindAsync(request.Id);
-            if (courseCat == null)
-                return BadRequest("User not found");
-
-            courseCat.Category = request.Category;
-            courseCat.image = request.image;
-            courseCat.desc = request.desc;
-
-            var valid = await this.dataContext.CourseCategories.
-            Where(result => result.Category == request.Category).ToListAsync();
-            if (valid.Count >= 1)
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+            try
             {
-                return BadRequest("Failed");
-            }
+                var courseCat = await this.dataContext.CourseCategories.FindAsync(request.Id);
+                if (courseCat == null)
+                    return BadRequest("User not found");
 
-            await this.dataContext.SaveChangesAsync();
-            return Ok(await this.dataContext.CourseCategories.ToListAsync());
+                courseCat.Category = request.Category;
+                courseCat.image = request.image;
+                courseCat.desc = request.desc;
+
+                await this.dataContext.SaveChangesAsync();
+
+                var valid = await this.dataContext.CourseCategories.
+                Where(result => result.Category == request.Category).ToListAsync();
+                if (valid.Count > 1) {
+                    await dbContextTransaction.RollbackAsync();    
+                    return BadRequest("Failed (Rollback)");
+                }
+
+                await dbContextTransaction.CommitAsync();
+
+                return Ok(await this.dataContext.CourseCategories.ToListAsync());    
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+            
         }
 
         [HttpDelete("{id}")]
