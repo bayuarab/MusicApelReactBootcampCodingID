@@ -4,7 +4,7 @@
 
 namespace SecondV.Migrations
 {
-    public partial class usercourse : Migration
+    public partial class ceklah : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
