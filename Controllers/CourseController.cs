@@ -105,6 +105,22 @@ namespace SecondV.Controllers
             }
         }
 
+        [HttpGet("categoryId/{courseCategoryId}/{Id}")]
+        public async Task<ActionResult<List<Course>>> GetCourseByCategoryId(int courseCategoryId, int Id)
+        {
+            try
+            {
+                var course = await this.dataContext.Courses.Where(result => result.CourseCategoryId == courseCategoryId && result.Id != Id).ToListAsync();
+                if (course.Count == 0)
+                    return BadRequest("Not Found");
+                return Ok(course);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpPut]
         public async Task<ActionResult<List<Course>>> Update(Course request)
         {
@@ -118,7 +134,7 @@ namespace SecondV.Controllers
                 var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
                 if (validCategory == null)
                     return BadRequest("Kategori tidak tersedia");
-
+                course.Id = request.Id;
                 course.CourseTitle = request.CourseTitle;
                 course.CourseImage = request.CourseImage;
                 course.CourseDesc = request.CourseDesc;
@@ -127,7 +143,7 @@ namespace SecondV.Controllers
 
                 await this.dataContext.SaveChangesAsync();
 
-                 var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
+                 var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle && result.Id != result.Id).ToListAsync();
                 if (valid.Count > 1) {
                     await dbContextTransaction.RollbackAsync(); 
                     return BadRequest("Kursus dengan judul serupa ditemukan");
@@ -147,14 +163,21 @@ namespace SecondV.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
-            var course = await this.dataContext.Courses.FindAsync(id);
-            if (course == null)
-                return BadRequest("Not Found");
+            try
+            {
+                var course = await this.dataContext.Courses.FindAsync(id);
+                if (course == null)
+                    return BadRequest("Not Found");
 
-            this.dataContext.Courses.Remove(course);
-            await this.dataContext.SaveChangesAsync();
+                this.dataContext.Courses.Remove(course);
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.Courses.ToListAsync());
+                return Ok(await this.dataContext.Courses.ToListAsync());
+            }
+            catch
+            {
+                return StatusCode(500, "unknown error");
+            }
         }
     }
 }
