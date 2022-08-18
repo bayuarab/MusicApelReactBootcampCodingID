@@ -62,13 +62,48 @@ namespace SecondV.Controllers
             this.dataContext.Schedules.Add(schedule);
             await this.dataContext.SaveChangesAsync();
 
-            var result = new {
+            var result = new
+            {
                 message = "Jadwal berhasil ditambahkan pada kelas",
                 course = validCourse.CourseTitle
             };
 
             return Ok(result);
         }
+
+        [HttpPut]
+        public async Task<ActionResult<List<Schedule>>> Update(Schedule request)
+        {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+            try
+            {
+                var schedule = await this.dataContext.Schedules.FindAsync(request.id);
+                if (schedule == null)
+                    return BadRequest("Schedule not found");
+
+                schedule.jadwal = request.jadwal;
+                schedule.CourseId = request.CourseId;
+
+                await this.dataContext.SaveChangesAsync();
+
+                var valid = await this.dataContext.Schedules.
+                Where(result => result.jadwal == request.jadwal).ToListAsync();
+                if (valid.Count > 1)
+                {
+                    await dbContextTransaction.RollbackAsync();
+                    return BadRequest("Failed (Rollback)");
+                }
+
+                await dbContextTransaction.CommitAsync();
+
+                return Ok(await this.dataContext.Schedules.ToListAsync());
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<Schedule>>> Delete(int id)
         {
