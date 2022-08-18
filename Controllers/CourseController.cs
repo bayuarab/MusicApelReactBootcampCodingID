@@ -16,7 +16,9 @@ namespace SecondV.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Course>>> Get()
         {
-            var data = await this.dataContext.Courses.
+            try
+            {
+                var data = await this.dataContext.Courses.
                 Join(this.dataContext.CourseCategories,
                     c => c.CourseCategoryId,
                     cc => cc.Id,
@@ -31,7 +33,13 @@ namespace SecondV.Controllers
                     courseCategoryId = result.cc.Id
                 }).ToListAsync();
 
-            return Ok(data);
+                return Ok(data);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+            
         }
 
         [HttpGet("{id}")]
@@ -53,7 +61,9 @@ namespace SecondV.Controllers
         [HttpGet("LandingPage")]
         public async Task<ActionResult<List<Course>>> GetClass()
         {
-            var data = await this.dataContext.Courses.
+            try
+            {
+                var data = await this.dataContext.Courses.
                 Join(this.dataContext.CourseCategories,
                     c => c.CourseCategoryId,
                     cc => cc.Id,
@@ -69,24 +79,38 @@ namespace SecondV.Controllers
                     CategoryId = result.cc.Id
                 }).ToListAsync();
 
-            return Ok(data);
+                return Ok(data);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+            
         }
 
         [HttpPost]
         public async Task<ActionResult<List<Course>>> AddCourse(Course course)
         {
-            var validTitle = await this.dataContext.Courses.FirstOrDefaultAsync(data => data.CourseTitle == course.CourseTitle);
-            if (validTitle != null)
-                return BadRequest("Course sudah ada");
+            try
+            {
+                var validTitle = await this.dataContext.Courses.FirstOrDefaultAsync(data => data.CourseTitle == course.CourseTitle);
+                if (validTitle != null)
+                    return BadRequest("Course sudah ada");
 
-            var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
-            if (validCategory == null)
-                return BadRequest("Kategori tidak tersedia");
+                var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
+                if (validCategory == null)
+                    return BadRequest("Kategori tidak tersedia");
 
-            this.dataContext.Courses.Add(course);
-            await this.dataContext.SaveChangesAsync();
+                this.dataContext.Courses.Add(course);
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok("Course berhasil ditambahkan");
+                return Ok("Course berhasil ditambahkan");
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+           
         }
 
         [HttpGet("categoryId/{courseCategoryId}")]
@@ -155,6 +179,7 @@ namespace SecondV.Controllers
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
             
