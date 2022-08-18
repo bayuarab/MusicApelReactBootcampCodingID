@@ -127,9 +127,10 @@ namespace SecondV.Controllers
 
                 await this.dataContext.SaveChangesAsync();
 
-                 var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
-                if (valid.Count > 1) {
-                    await dbContextTransaction.RollbackAsync(); 
+                var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
+                if (valid.Count > 1)
+                {
+                    await dbContextTransaction.RollbackAsync();
                     return BadRequest("Kursus dengan judul serupa ditemukan");
                 }
 
@@ -141,7 +142,7 @@ namespace SecondV.Controllers
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-            
+
         }
 
         [HttpDelete("{id}")]
