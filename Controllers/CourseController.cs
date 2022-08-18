@@ -35,11 +35,10 @@ namespace SecondV.Controllers
 
                 return Ok(data);
             }
-            catch
+            catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-            
         }
 
         [HttpGet("{id}")]
@@ -81,11 +80,10 @@ namespace SecondV.Controllers
 
                 return Ok(data);
             }
-            catch
+            catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-            
         }
 
         [HttpPost]
@@ -106,11 +104,10 @@ namespace SecondV.Controllers
 
                 return Ok("Course berhasil ditambahkan");
             }
-            catch
+            catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-           
         }
 
         [HttpGet("categoryId/{courseCategoryId}")]
@@ -167,9 +164,10 @@ namespace SecondV.Controllers
 
                 await this.dataContext.SaveChangesAsync();
 
-                 var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle && result.Id != result.Id).ToListAsync();
-                if (valid.Count > 1) {
-                    await dbContextTransaction.RollbackAsync(); 
+                var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
+                if (valid.Count > 1)
+                {
+                    await dbContextTransaction.RollbackAsync();
                     return BadRequest("Kursus dengan judul serupa ditemukan");
                 }
 
@@ -182,7 +180,7 @@ namespace SecondV.Controllers
                 await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
-            
+
         }
 
         [HttpDelete("{id}")]
@@ -199,9 +197,9 @@ namespace SecondV.Controllers
 
                 return Ok(await this.dataContext.Courses.ToListAsync());
             }
-            catch
+            catch (System.Exception)
             {
-                return StatusCode(500, "unknown error");
+                return StatusCode(500, "Unknown error occurred");
             }
         }
     }

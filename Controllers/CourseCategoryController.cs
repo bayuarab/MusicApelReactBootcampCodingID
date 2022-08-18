@@ -20,11 +20,10 @@ namespace SecondV.Controllers
             {
                 return Ok(await this.dataContext.CourseCategories.ToListAsync());
             }
-            catch
+            catch (System.Exception)
             {
-                return StatusCode(500, "unkknown error");
+                return StatusCode(500, "Unknown error occurred");
             }
-            
         }
 
         [HttpGet("{id}")]
@@ -76,11 +75,10 @@ namespace SecondV.Controllers
 
                 return Ok("Category berhasil ditambahkan");
             }
-            catch
+            catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-            
         }
 
         [HttpPut]
@@ -133,11 +131,10 @@ namespace SecondV.Controllers
 
                 return Ok(await this.dataContext.CourseCategories.ToListAsync());
             }
-            catch
+            catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-            
         }
     }
 }

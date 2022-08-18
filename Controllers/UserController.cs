@@ -24,33 +24,55 @@ namespace SecondV.Controllers
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetUser()
         {
-            return Ok(await this.dataContext.Users.ToListAsync());
+            try
+            {
+                return Ok(await this.dataContext.Users.ToListAsync());
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpGet("AllUser")]
         public async Task<ActionResult<List<User>>> GetAllUser()
         {
-            var data = await this.dataContext.Users.
-            Where(data => data.roles != "admin").
-            Select(result => new {
-                result.nama,
-                result.email
-            }).ToListAsync();
+            try
+            {
+                var data = await this.dataContext.Users.
+                Where(data => data.roles != "admin").
+                Select(result => new
+                {
+                    result.nama,
+                    result.email
+                }).ToListAsync();
 
-            return Ok(data);
-        }     
+                return Ok(data);
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
 
         [HttpPost]
         public async Task<ActionResult<List<User>>> AddUsers(User user)
         {
-            var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == user.email);
-            if (validEmail != null)
-                return BadRequest("Email sudah terdaftar");
+            try
+            {
+                var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == user.email);
+                if (validEmail != null)
+                    return BadRequest("Email sudah terdaftar");
 
-            this.dataContext.Users.Add(user);
-            await this.dataContext.SaveChangesAsync();
+                this.dataContext.Users.Add(user);
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok("Registrasi sukses");
+                return Ok("Registrasi sukses");
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpDelete("{userEmail}")]
@@ -76,23 +98,30 @@ namespace SecondV.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<List<User>>> UserLogin(User request)
         {
-            var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
-            if (userValid == null)
-                return BadRequest("Akun tidak ditemukan");
-
-            if (userValid.password != request.password)
-                return BadRequest("Password Salah");
-
-            var valid = await this.dataContext.Users.
-            Where(result => result.email == request.email).
-            Select(result => new
+            try
             {
-                id = result.Id,
-                roles = result.roles,
-                nama = result.nama
-            }).ToListAsync();
+                var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+                if (userValid == null)
+                    return BadRequest("Akun tidak ditemukan");
 
-            return Ok(valid[0]);
+                if (userValid.password != request.password)
+                    return BadRequest("Password Salah");
+
+                var valid = await this.dataContext.Users.
+                Where(result => result.email == request.email).
+                Select(result => new
+                {
+                    id = result.Id,
+                    roles = result.roles,
+                    nama = result.nama
+                }).ToListAsync();
+
+                return Ok(valid[0]);
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
 
             //------------------------------------ Output id and roles only
 
@@ -117,7 +146,7 @@ namespace SecondV.Controllers
 
                 if (validUser.email != request.email)
                     return BadRequest("Not valid data");
-                
+
                 validUser.password = request.password;
 
                 await this.dataContext.SaveChangesAsync();
@@ -130,7 +159,7 @@ namespace SecondV.Controllers
             {
                 await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
-            }            
+            }
         }
 
         [HttpPost("PasswordValidation")]
@@ -144,7 +173,7 @@ namespace SecondV.Controllers
 
                 if (validUser.email != request.email)
                     return BadRequest("Not valid data");
-                
+
                 if (validUser.password != request.password)
                     return BadRequest("Data not valid");
 
@@ -153,7 +182,7 @@ namespace SecondV.Controllers
             catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
-            }            
+            }
         }
 
         [HttpPut("ChangeName")]
@@ -165,10 +194,10 @@ namespace SecondV.Controllers
                 var validUser = await this.dataContext.Users.FindAsync(request.Id);
                 if (validUser == null)
                     return BadRequest("Not valid data");
-                
+
                 if (validUser.email != request.email)
                     return BadRequest("Not valid data");
-                
+
                 validUser.nama = request.nama;
 
                 await this.dataContext.SaveChangesAsync();
@@ -181,20 +210,26 @@ namespace SecondV.Controllers
             {
                 await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
-            }            
+            }
         }
 
         [HttpPost("CheckEmail")]
         public async Task<ActionResult<List<User>>> CheckEmail(User request)
         {
-            var checkEmail = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
-            if (checkEmail == null)
+            try
             {
-                return BadRequest("Email tidak ditemukan");
+                var checkEmail = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+                if (checkEmail == null)
+                {
+                    return BadRequest("Email tidak ditemukan");
+                }
+
+                return Ok("Succes");
             }
-
-            return Ok("Succes");
-
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpPost("MInvoice")]
@@ -234,13 +269,14 @@ namespace SecondV.Controllers
                 Join(this.dataContext.CourseCategories,
                     c => c.CourseCategoryId,
                     cc => cc.Id,
-                    (c , cc) => new {c, cc}).
-                Select(result => new {
+                    (c, cc) => new { c, cc }).
+                Select(result => new
+                {
                     result.c.Id,
                     result.c.CourseTitle,
                     result.cc.Category,
                     result.c.Price
-                }).FirstOrDefaultAsync( data => data.Id == request.CourseId);
+                }).FirstOrDefaultAsync(data => data.Id == request.CourseId);
 
                 if (validCourse == null)
                     return BadRequest("Not valid data");
@@ -251,9 +287,10 @@ namespace SecondV.Controllers
 
                 if (validMasterId.NoInvoice != request.NoInvoice)
                     return BadRequest("Not valid data");
-                
 
-                this.dataContext.InvoiceDetails.Add(entity: new InvoiceDetail {
+
+                this.dataContext.InvoiceDetails.Add(entity: new InvoiceDetail
+                {
                     NoInvoice = request.NoInvoice,
                     CourseCategory = validCourse.Category,
                     Course = validCourse.CourseTitle,
@@ -262,7 +299,8 @@ namespace SecondV.Controllers
                     MasterInvoiceId = request.MasterInvoiceId
                 });
 
-                this.dataContext.UserCourses.Add(entity: new UserCourse {
+                this.dataContext.UserCourses.Add(entity: new UserCourse
+                {
                     CourseId = request.CourseId,
                     ScheduleId = request.ScheduleId,
                     UserId = validMasterId.UserId,
@@ -273,7 +311,7 @@ namespace SecondV.Controllers
 
                 await dbContextTransaction.CommitAsync();
 
-                return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == request.NoInvoice).ToListAsync());    
+                return Ok(await this.dataContext.InvoiceDetails.Where(result => result.NoInvoice == request.NoInvoice).ToListAsync());
             }
             catch
             {
@@ -289,14 +327,14 @@ namespace SecondV.Controllers
         //         var validUser = this.dataContext.Users.FindAsync(request.UserId);
         //         if (validUser == null)
         //             return BadRequest("Not valid data");
-                    
+
         //         var validCourse = this.dataContext.Courses.FindAsync(request.UserId);
         //         if (validUser == null)
         //             return BadRequest("Not valid data");
         //     }
         //     catch (System.Exception)
         //     {
-                
+
         //         throw;
         //     }
         // }
@@ -318,7 +356,7 @@ namespace SecondV.Controllers
                 Join(this.dataContext.Schedules,
                     cacc => cacc.cac.ca.ScheduleId,
                     s => s.id,
-                    (caccs, s) => new {caccs,s}).
+                    (caccs, s) => new { caccs, s }).
                 Where(data => data.caccs.cac.ca.UserId == userID).
                 Select(result => new
                 {
@@ -414,11 +452,12 @@ namespace SecondV.Controllers
             {
                 var data = await this.dataContext.InvoiceDetails.
                 Join(this.dataContext.MasterInvoices,
-                    ind=> ind.MasterInvoiceId,
+                    ind => ind.MasterInvoiceId,
                     mi => mi.Id,
-                    (ind, mi) => new {ind, mi}).
+                    (ind, mi) => new { ind, mi }).
                 Where(result => result.ind.NoInvoice == noInvoice && result.mi.UserId == UserId).
-                Select(result => new { 
+                Select(result => new
+                {
                     NoInvoice = result.ind.NoInvoice,
                     Course = result.ind.Course,
                     Category = result.ind.CourseCategory,
@@ -427,13 +466,13 @@ namespace SecondV.Controllers
                     Cost = result.mi.Cost,
                     purchasedDate = result.mi.PurchaseDate
                 }).ToListAsync();
-                
+
                 if (data.Count == 0)
                     return BadRequest("Not Found");
-                    
+
                 return Ok(data);
             }
-            catch 
+            catch
             {
                 return StatusCode(500, "Unknown error occurred");
             }
@@ -448,15 +487,15 @@ namespace SecondV.Controllers
                 Join(this.dataContext.Courses,
                     uc => uc.CourseId,
                     c => c.Id,
-                    (uc, c) => new { uc, c}).
+                    (uc, c) => new { uc, c }).
                 Join(this.dataContext.CourseCategories,
                     ucc => ucc.c.CourseCategoryId,
                     cc => cc.Id,
-                    (ucc, cc) => new { ucc, cc}).
+                    (ucc, cc) => new { ucc, cc }).
                 Join(this.dataContext.Schedules,
                     ucccc => ucccc.ucc.uc.ScheduleId,
                     s => s.id,
-                    (ucccc, s) => new { ucccc, s}).
+                    (ucccc, s) => new { ucccc, s }).
                 Where(data => data.ucccc.ucc.uc.UserId == userId).
                 Select(result => new
                 {
