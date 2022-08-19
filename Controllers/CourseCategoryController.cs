@@ -16,7 +16,14 @@ namespace SecondV.Controllers
         [HttpGet]
         public async Task<ActionResult<List<CourseCategory>>> Get()
         {
-            return Ok(await this.dataContext.CourseCategories.ToListAsync());
+            try
+            {
+                return Ok(await this.dataContext.CourseCategories.ToListAsync());
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpGet("{id}")]
@@ -57,14 +64,21 @@ namespace SecondV.Controllers
         [HttpPost]
         public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody] CourseCategory courseCategory)
         {
-            var validCategory = await this.dataContext.CourseCategories.FirstOrDefaultAsync(data => data.Category == courseCategory.Category);
-            if (validCategory != null)
-                return BadRequest("Category sudah ada");
+            try
+            {
+                var validCategory = await this.dataContext.CourseCategories.FirstOrDefaultAsync(data => data.Category == courseCategory.Category);
+                if (validCategory != null)
+                    return BadRequest("Category sudah ada");
 
-            this.dataContext.CourseCategories.Add(courseCategory);
-            await this.dataContext.SaveChangesAsync();
+                this.dataContext.CourseCategories.Add(courseCategory);
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok("Category berhasil ditambahkan");
+                return Ok("Category berhasil ditambahkan");
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpPut]
@@ -105,14 +119,21 @@ namespace SecondV.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
-            var courseCategory = await this.dataContext.CourseCategories.FindAsync(id);
-            if (courseCategory == null)
-                return BadRequest("Not Found");
+            try
+            {
+                var courseCategory = await this.dataContext.CourseCategories.FindAsync(id);
+                if (courseCategory == null)
+                    return BadRequest("Not Found");
 
-            this.dataContext.CourseCategories.Remove(courseCategory);
-            await this.dataContext.SaveChangesAsync();
+                this.dataContext.CourseCategories.Remove(courseCategory);
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.CourseCategories.ToListAsync());
+                return Ok(await this.dataContext.CourseCategories.ToListAsync());
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
     }
 }
