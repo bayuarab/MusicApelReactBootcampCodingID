@@ -97,44 +97,34 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost("Login")]
-        public async Task<ActionResult<List<User>>> UserLogin(User request)
-        {
-            try
-            {
-                var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
-                if (userValid == null)
-                    return BadRequest("Akun tidak ditemukan");
+        // [HttpPost("Login")]
+        // public async Task<ActionResult<List<User>>> UserLogin(User request)
+        // {
+        //     try
+        //     {
+        //         var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+        //         if (userValid == null)
+        //             return BadRequest("Akun tidak ditemukan");
 
-                if (userValid.password != request.password)
-                    return BadRequest("Password Salah");
+        //         if (userValid.password != request.password)
+        //             return BadRequest("Password Salah");
 
-                var valid = await this.dataContext.Users.
-                Where(result => result.email == request.email).
-                Select(result => new
-                {
-                    id = result.Id,
-                    roles = result.roles,
-                    nama = result.nama
-                }).ToListAsync();
+        //         var valid = await this.dataContext.Users.
+        //         Where(result => result.email == request.email).
+        //         Select(result => new
+        //         {
+        //             id = result.Id,
+        //             roles = result.roles,
+        //             nama = result.nama
+        //         }).ToListAsync();
 
-                return Ok(valid[0]);
-            }
-            catch (System.Exception)
-            {
-                return StatusCode(500, "Unknown error occurred");
-            }
-
-        //     //------------------------------------ Output id and roles only
-
-        //     // var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
-        //     // if (userValid == null)
-        //     //     return BadRequest("username not found");
-        //     // if (userValid.password != request.password)
-        //     //     return BadRequest("Wrong Password");
-
-            // return Ok(userValid);
-        }
+        //         return Ok(valid[0]);
+        //     }
+        //     catch (System.Exception)
+        //     {
+        //         return StatusCode(500, "Unknown error occurred");
+        //     }
+        // }
 
         // [HttpPut("ChangePassword")]
         // public async Task<ActionResult<User>> ChangeUserPass(User request)
