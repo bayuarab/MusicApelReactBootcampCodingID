@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-  // "ConnectionStrings": {
-  //   "DefaultConnection": "server=localhost\\sqlexpress;database=SecondVDb;trusted_connection=true"
-  // },
+// "ConnectionStrings": {
+//   "DefaultConnection": "server=localhost\\sqlexpress;database=SecondVDb;trusted_connection=true"
+// },
 namespace SecondV.Controllers
 {
     [ApiController]
@@ -108,56 +108,56 @@ namespace SecondV.Controllers
         //     // return Ok(userValid);
         // }
 
-        [HttpPut("ChangePassword")]
-        public async Task<ActionResult<User>> ChangeUserPass(User request)
-        {
-            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
-            try
-            {
-                var validUser = await this.dataContext.Users.FindAsync(request.Id);
-                if (validUser == null)
-                    return BadRequest("Not valid data");
+        // [HttpPut("ChangePassword")]
+        // public async Task<ActionResult<User>> ChangeUserPass(User request)
+        // {
+        //     Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+        //     try
+        //     {
+        //         var validUser = await this.dataContext.Users.FindAsync(request.Id);
+        //         if (validUser == null)
+        //             return BadRequest("Not valid data");
 
-                if (validUser.email != request.email)
-                    return BadRequest("Not valid data");
+        //         if (validUser.email != request.email)
+        //             return BadRequest("Not valid data");
                 
-                // validUser.password = request.password;
+        //         // validUser.password = request.password;
 
-                await this.dataContext.SaveChangesAsync();
+        //         await this.dataContext.SaveChangesAsync();
 
-                await dbContextTransaction.CommitAsync();
+        //         await dbContextTransaction.CommitAsync();
 
-                return Ok("Success");
-            }
-            catch (System.Exception)
-            {
-                await dbContextTransaction.RollbackAsync();
-                return StatusCode(500, "Unknown error occurred");
-            }            
-        }
+        //         return Ok("Success");
+        //     }
+        //     catch (System.Exception)
+        //     {
+        //         await dbContextTransaction.RollbackAsync();
+        //         return StatusCode(500, "Unknown error occurred");
+        //     }            
+        // }
 
-        [HttpPost("PasswordValidation")]
-        public async Task<ActionResult<List<User>>> ValidationChangePassword(User request)
-        {
-            try
-            {
-                var validUser = await this.dataContext.Users.FindAsync(request.Id);
-                if (validUser == null)
-                    return BadRequest("Not valid data");
+        // [HttpPost("PasswordValidation")]
+        // public async Task<ActionResult<List<User>>> ValidationChangePassword(User request)
+        // {
+        //     try
+        //     {
+        //         var validUser = await this.dataContext.Users.FindAsync(request.Id);
+        //         if (validUser == null)
+        //             return BadRequest("Not valid data");
 
-                if (validUser.email != request.email)
-                    return BadRequest("Not valid data");
+        //         if (validUser.email != request.email)
+        //             return BadRequest("Not valid data");
                 
-                // if (validUser.password != request.password)
-                    // return BadRequest("Data not valid");
+        //         // if (validUser.password != request.password)
+        //             // return BadRequest("Data not valid");
 
-                return Ok("Success");
-            }
-            catch (System.Exception)
-            {
-                return StatusCode(500, "Unknown error occurred");
-            }            
-        }
+        //         return Ok("Success");
+        //     }
+        //     catch (System.Exception)
+        //     {
+        //         return StatusCode(500, "Unknown error occurred");
+        //     }            
+        // }
 
         [HttpPut("ChangeName")]
         public async Task<ActionResult<User>> ChangeUserName(User request)
