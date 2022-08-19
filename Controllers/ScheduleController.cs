@@ -116,7 +116,7 @@ namespace SecondV.Controllers
                 await this.dataContext.SaveChangesAsync();
 
                 var valid = await this.dataContext.Schedules.
-                Where(result => result.jadwal == request.jadwal).ToListAsync();
+                Where(result => result.jadwal == request.jadwal && result.CourseId == request.CourseId).ToListAsync();
                 if (valid.Count > 1)
                 {
                     await dbContextTransaction.RollbackAsync();
