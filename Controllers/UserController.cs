@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-
+  // "ConnectionStrings": {
+  //   "DefaultConnection": "server=localhost\\sqlexpress;database=SecondVDb;trusted_connection=true"
+  // },
 namespace SecondV.Controllers
 {
     [ApiController]
@@ -147,7 +149,7 @@ namespace SecondV.Controllers
                     return BadRequest("Not valid data");
                 
                 // if (validUser.password != request.password)
-                    return BadRequest("Data not valid");
+                    // return BadRequest("Data not valid");
 
                 return Ok("Success");
             }

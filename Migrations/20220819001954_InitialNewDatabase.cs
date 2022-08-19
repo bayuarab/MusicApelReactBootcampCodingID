@@ -4,7 +4,7 @@
 
 namespace SecondV.Migrations
 {
-    public partial class diks : Migration
+    public partial class InitialNewDatabase : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -62,7 +62,8 @@ namespace SecondV.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     nama = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    password = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    passwordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    passwordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     roles = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>

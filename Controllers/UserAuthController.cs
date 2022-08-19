@@ -20,6 +20,13 @@ namespace SecondV.Controllers
             this.configuration = configuration;
         }
 
+        public class userChangePassword
+        {
+            public int Id { get; set; }
+            public string? Email { get; set; }
+            public string? Password { get; set; }
+        }
+
         [HttpPost("Register")]
         public async Task<ActionResult<User>> Register(UserAuthDto request)
         {
@@ -33,7 +40,7 @@ namespace SecondV.Controllers
                 email = request.Email,
                 passwordHash = passwordHash,
                 passwordSalt = passwordSalt,
-                // password = request.Password
+                roles = request.Roles
             });
             
             await this.dataContext.SaveChangesAsync();
@@ -56,11 +63,71 @@ namespace SecondV.Controllers
             string token = CreateToken(validUser);
             var userData = new User {
                 Id = validUser.Id,
+                email = validUser.email,
                 nama = validUser.nama,
-                roles = validUser.roles
+                roles = validUser.roles,
             };
 
             return Ok(new {token, userData});
+        }
+
+        [HttpPut("ChangePassword")]
+        public async Task<ActionResult<User>> ChangeUserPassword(userChangePassword request)
+        {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+            try
+            {
+                var validUser = await this.dataContext.Users.FindAsync(request.Id);
+                if (validUser == null || request.Password == null || validUser.passwordHash == null || validUser.passwordSalt == null)
+                    return BadRequest("Not valid data");
+
+                if (validUser.email != request.Email)
+                    return BadRequest("Not valid data");
+                
+                if (request.Password == null)
+                    return BadRequest("invalid password");
+
+                CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+                validUser.passwordHash = passwordHash;
+                validUser.passwordSalt = passwordSalt;
+
+                await this.dataContext.SaveChangesAsync();
+
+                await dbContextTransaction.CommitAsync();
+
+                return Ok("Success");
+            }
+            catch (System.Exception)
+            {
+                await dbContextTransaction.RollbackAsync();
+                return StatusCode(500, "Unknown error occurred");
+            }            
+        }
+
+        [HttpPost("PasswordValidation")]
+        public async Task<ActionResult<List<User>>> ValidationChangePassword(userChangePassword request)
+        {
+            try
+            {
+                var validUser = await this.dataContext.Users.FindAsync(request.Id);
+                if (validUser == null || request.Password == null || validUser.passwordHash == null || validUser.passwordSalt == null)
+                    return BadRequest("Invalid user");
+
+                if (validUser.email != request.Email)
+                    return BadRequest("Not valid data");
+
+                var validPassword = VerifyPasswordHash(request.Password, validUser, validUser.passwordHash, validUser.passwordSalt);
+
+                if (!validPassword)
+                    return BadRequest("Invalid user");
+
+                return Ok("Success");
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }            
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

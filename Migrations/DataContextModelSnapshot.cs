@@ -231,8 +231,11 @@ namespace SecondV.Migrations
                     b.Property<string>("nama")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("password")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("passwordHash")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("passwordSalt")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("roles")
                         .IsRequired()
@@ -282,7 +285,7 @@ namespace SecondV.Migrations
                     b.HasOne("SecondV.Models.Schedule", "Schedule")
                         .WithMany()
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SecondV.Models.User", "User")
@@ -342,7 +345,7 @@ namespace SecondV.Migrations
                     b.HasOne("SecondV.Models.Schedule", "Schedule")
                         .WithMany()
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SecondV.Models.User", "User")

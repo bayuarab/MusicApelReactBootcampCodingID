@@ -12,8 +12,8 @@ using SecondV.Data;
 namespace SecondV.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220818114136_diks")]
-    partial class diks
+    [Migration("20220819001954_InitialNewDatabase")]
+    partial class InitialNewDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -233,8 +233,11 @@ namespace SecondV.Migrations
                     b.Property<string>("nama")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("password")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("passwordHash")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("passwordSalt")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("roles")
                         .IsRequired()
@@ -284,7 +287,7 @@ namespace SecondV.Migrations
                     b.HasOne("SecondV.Models.Schedule", "Schedule")
                         .WithMany()
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SecondV.Models.User", "User")
@@ -344,7 +347,7 @@ namespace SecondV.Migrations
                     b.HasOne("SecondV.Models.Schedule", "Schedule")
                         .WithMany()
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SecondV.Models.User", "User")
