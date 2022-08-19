@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 // "ConnectionStrings": {
 //   "DefaultConnection": "server=localhost\\sqlexpress;database=SecondVDb;trusted_connection=true"
@@ -36,7 +37,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpGet("AllUser")]
+        [HttpGet("AllUser"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<User>>> GetAllUser()
         {
             try
@@ -77,7 +78,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpDelete("{userEmail}")]
+        [HttpDelete("{userEmail}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<User>> DeleteUser(string userEmail)
         {
             try

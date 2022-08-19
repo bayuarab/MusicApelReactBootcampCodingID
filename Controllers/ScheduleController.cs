@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SecondV.Controllers
 {
@@ -13,20 +14,20 @@ namespace SecondV.Controllers
             this.dataContext = dataContext;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Schedule>>> GetSchedule()
-        {
-            try
-            {
-                return Ok(await this.dataContext.Schedules.ToListAsync());
-            }
-            catch (System.Exception)
-            {
-                return StatusCode(500, "Unknown error occurred");
-            }
-        }
+        // [HttpGet]
+        // public async Task<ActionResult<List<Schedule>>> GetSchedule()
+        // {
+        //     try
+        //     {
+        //         return Ok(await this.dataContext.Schedules.ToListAsync());
+        //     }
+        //     catch (System.Exception)
+        //     {
+        //         return StatusCode(500, "Unknown error occurred");
+        //     }
+        // }
 
-        [HttpGet("Admin")]
+        [HttpGet("Admin"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Schedule>>> Get()
         {
             try
@@ -70,7 +71,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Schedule>>> PostSchedule([FromBody] Schedule schedule)
         {
             try
@@ -100,7 +101,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Schedule>>> Update(Schedule request)
         {
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
@@ -110,13 +111,17 @@ namespace SecondV.Controllers
                 if (schedule == null)
                     return BadRequest("Schedule not found");
 
+                var usedSchedule = await this.dataContext.UserCourses.FirstOrDefaultAsync(data => data.ScheduleId == request.id);
+                if (usedSchedule != null)
+                    return BadRequest("Cannot delete used schedule");
+
                 schedule.jadwal = request.jadwal;
                 schedule.CourseId = request.CourseId;
 
                 await this.dataContext.SaveChangesAsync();
-
+                
                 var valid = await this.dataContext.Schedules.
-                Where(result => result.jadwal == request.jadwal).ToListAsync();
+                Where(result => result.jadwal == request.jadwal && result.CourseId == request.CourseId).ToListAsync();
                 if (valid.Count > 1)
                 {
                     await dbContextTransaction.RollbackAsync();
@@ -133,7 +138,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Schedule>>> Delete(int id)
         {
             try

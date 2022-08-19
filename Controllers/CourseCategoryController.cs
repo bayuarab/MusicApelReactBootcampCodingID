@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SecondV.Controllers
@@ -61,7 +62,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody] CourseCategory courseCategory)
         {
             try
@@ -81,7 +82,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<CourseCategory>>> Update(CourseCategory request)
         {
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
@@ -116,7 +117,7 @@ namespace SecondV.Controllers
 
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
             try

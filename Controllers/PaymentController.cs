@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SecondV.Controllers
@@ -13,7 +14,7 @@ namespace SecondV.Controllers
             this.dataContext = dataContext;
         }
         
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<PaymentMethod>>> GetPaymentMethod()
         {
             try
@@ -27,7 +28,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<PaymentMethod>> AddPaymentMethod(PaymentMethod request)
         {
             try
@@ -47,7 +48,7 @@ namespace SecondV.Controllers
             }            
         }
 
-        [HttpPut]
+        [HttpPut, Authorize(Roles = "admin")]
         public async Task<ActionResult<PaymentMethod>> EditPaymentMethod(PaymentMethod request)
         {
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
@@ -78,7 +79,7 @@ namespace SecondV.Controllers
             }            
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<PaymentMethod>> DeleteMethod(int id)
         {
             try
