@@ -73,37 +73,38 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost("Login")]
-        public async Task<ActionResult<List<User>>> UserLogin(User request)
-        {
-            var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
-            if (userValid == null)
-                return BadRequest("Akun tidak ditemukan");
+        // Non jwt
+        // [HttpPost("Login")]
+        // public async Task<ActionResult<List<User>>> UserLogin(User request)
+        // {
+        //     var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+        //     if (userValid == null)
+        //         return BadRequest("Akun tidak ditemukan");
 
-            if (userValid.password != request.password)
-                return BadRequest("Password Salah");
+        //     if (userValid.password != request.password)
+        //         return BadRequest("Password Salah");
 
-            var valid = await this.dataContext.Users.
-            Where(result => result.email == request.email).
-            Select(result => new
-            {
-                id = result.Id,
-                roles = result.roles,
-                nama = result.nama
-            }).ToListAsync();
+        //     var valid = await this.dataContext.Users.
+        //     Where(result => result.email == request.email).
+        //     Select(result => new
+        //     {
+        //         id = result.Id,
+        //         roles = result.roles,
+        //         nama = result.nama
+        //     }).ToListAsync();
 
-            return Ok(valid[0]);
+        //     return Ok(valid[0]);
 
-            //------------------------------------ Output id and roles only
+        //     //------------------------------------ Output id and roles only
 
-            // var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
-            // if (userValid == null)
-            //     return BadRequest("username not found");
-            // if (userValid.password != request.password)
-            //     return BadRequest("Wrong Password");
+        //     // var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
+        //     // if (userValid == null)
+        //     //     return BadRequest("username not found");
+        //     // if (userValid.password != request.password)
+        //     //     return BadRequest("Wrong Password");
 
-            // return Ok(userValid);
-        }
+        //     // return Ok(userValid);
+        // }
 
         [HttpPut("ChangePassword")]
         public async Task<ActionResult<User>> ChangeUserPass(User request)
@@ -118,7 +119,7 @@ namespace SecondV.Controllers
                 if (validUser.email != request.email)
                     return BadRequest("Not valid data");
                 
-                validUser.password = request.password;
+                // validUser.password = request.password;
 
                 await this.dataContext.SaveChangesAsync();
 
@@ -145,7 +146,7 @@ namespace SecondV.Controllers
                 if (validUser.email != request.email)
                     return BadRequest("Not valid data");
                 
-                if (validUser.password != request.password)
+                // if (validUser.password != request.password)
                     return BadRequest("Data not valid");
 
                 return Ok("Success");
