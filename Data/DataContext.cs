@@ -1,9 +1,27 @@
+using System.Security.Cryptography;
 namespace SecondV.Data
 {
     public class DataContext : DbContext
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options){}
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            using (var hmac = new HMACSHA512()){
+            builder.Entity<User>().HasData(
+                new User
+                {
+                    Id = 1,
+                    nama = "admin",
+                    email = "admin",
+                    roles = "admin",
+                    passwordSalt = hmac.Key,
+                    passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes("admin"))
+                }
+            );
+            }
+        }
+        
         public DbSet<MasterInvoice> MasterInvoices { get; set; }
 
         public DbSet<InvoiceDetail> InvoiceDetails { get; set; }
