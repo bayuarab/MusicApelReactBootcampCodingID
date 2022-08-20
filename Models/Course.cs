@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace SecondV.Models
 {
     public class Course
@@ -9,8 +7,7 @@ namespace SecondV.Models
         public string? CourseImage { get; set; }
         public string? CourseDesc { get; set; }
         public int Price { get; set; }
-
-        [ForeignKey("CourseCategory")]
         public int? CourseCategoryId { get; set; }
+        public CourseCategory? CourseCategory { get; set; }
     }
 }
