@@ -145,6 +145,22 @@ namespace SecondV.Controllers
             }
         }
 
+        [HttpGet("categoryId/{courseCategoryId}/{Id}")]
+        public async Task<ActionResult<List<Course>>> GetCourseByCategoryId(int courseCategoryId, int Id)
+        {
+            try
+            {
+                var course = await this.dataContext.Courses.Where(result => result.CourseCategoryId == courseCategoryId && result.Id != Id).ToListAsync();
+                if (course.Count == 0)
+                    return BadRequest("Not Found");
+                return Ok(course);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpPut]
         public async Task<ActionResult<List<Course>>> Update(Course request)
         {
@@ -158,7 +174,7 @@ namespace SecondV.Controllers
                 var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
                 if (validCategory == null)
                     return BadRequest("Kategori tidak tersedia");
-
+                course.Id = request.Id;
                 course.CourseTitle = request.CourseTitle;
                 course.CourseImage = request.CourseImage;
                 course.CourseDesc = request.CourseDesc;
@@ -180,6 +196,7 @@ namespace SecondV.Controllers
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
 

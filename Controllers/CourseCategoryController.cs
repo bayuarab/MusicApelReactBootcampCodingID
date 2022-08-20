@@ -111,6 +111,7 @@ namespace SecondV.Controllers
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
 

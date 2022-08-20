@@ -282,7 +282,7 @@ namespace SecondV.Migrations
                     b.HasOne("SecondV.Models.Schedule", "Schedule")
                         .WithMany()
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SecondV.Models.User", "User")
@@ -342,7 +342,7 @@ namespace SecondV.Migrations
                     b.HasOne("SecondV.Models.Schedule", "Schedule")
                         .WithMany()
                         .HasForeignKey("ScheduleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("SecondV.Models.User", "User")
