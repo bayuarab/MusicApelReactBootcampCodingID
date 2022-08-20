@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SecondV.Controllers
 {
@@ -71,7 +72,7 @@ namespace SecondV.Controllers
             return Ok(new {token, userData});
         }
 
-        [HttpPut("ChangePassword")]
+        [HttpPut("ChangePassword"), Authorize(Roles = "student")]
         public async Task<ActionResult<User>> ChangeUserPassword(userChangePassword request)
         {
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
@@ -105,7 +106,7 @@ namespace SecondV.Controllers
             }            
         }
 
-        [HttpPost("PasswordValidation")]
+        [HttpPost("PasswordValidation"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<User>>> ValidationChangePassword(userChangePassword request)
         {
             try
@@ -128,6 +129,36 @@ namespace SecondV.Controllers
             {
                 return StatusCode(500, "Unknown error occurred");
             }            
+        }
+
+        [HttpPut("ChangeName"), Authorize(Roles = "student")]
+        public async Task<ActionResult<User>> ChangeUserName(User request)
+        {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+            try
+            {
+                var validUser = await this.dataContext.Users.FindAsync(request.Id);
+                if (validUser == null)
+                    return BadRequest("Not valid data");
+
+                if (validUser.email != request.email)
+                    return BadRequest("Not valid data");
+
+                validUser.nama = request.nama;
+
+                await this.dataContext.SaveChangesAsync();
+
+                await dbContextTransaction.CommitAsync();
+
+                string token = CreateToken(validUser);
+
+                return Ok(token);
+            }
+            catch (System.Exception)
+            {
+                await dbContextTransaction.RollbackAsync();
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

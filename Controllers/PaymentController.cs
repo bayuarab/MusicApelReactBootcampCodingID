@@ -14,7 +14,7 @@ namespace SecondV.Controllers
             this.dataContext = dataContext;
         }
         
-        [HttpGet, Authorize(Roles = "admin")]
+        [HttpGet, Authorize(Roles = "admin, student")]
         public async Task<ActionResult<List<PaymentMethod>>> GetPaymentMethod()
         {
             try

@@ -24,18 +24,18 @@ namespace SecondV.Controllers
             public int MasterInvoiceId { get; set; }
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<User>>> GetUser()
-        {
-            try
-            {
-                return Ok(await this.dataContext.Users.ToListAsync());
-            }
-            catch (System.Exception)
-            {
-                return StatusCode(500, "Unknown error occurred");
-            }
-        }
+        // [HttpGet]
+        // public async Task<ActionResult<List<User>>> GetUser()
+        // {
+        //     try
+        //     {
+        //         return Ok(await this.dataContext.Users.ToListAsync());
+        //     }
+        //     catch (System.Exception)
+        //     {
+        //         return StatusCode(500, "Unknown error occurred");
+        //     }
+        // }
 
         [HttpGet("AllUser"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<User>>> GetAllUser()
@@ -58,25 +58,25 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<ActionResult<List<User>>> AddUsers(User user)
-        {
-            try
-            {
-                var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == user.email);
-                if (validEmail != null)
-                    return BadRequest("Email sudah terdaftar");
+        // [HttpPost]
+        // public async Task<ActionResult<List<User>>> AddUsers(User user)
+        // {
+        //     try
+        //     {
+        //         var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == user.email);
+        //         if (validEmail != null)
+        //             return BadRequest("Email sudah terdaftar");
 
-                this.dataContext.Users.Add(user);
-                await this.dataContext.SaveChangesAsync();
+        //         this.dataContext.Users.Add(user);
+        //         await this.dataContext.SaveChangesAsync();
 
-                return Ok("Registrasi sukses");
-            }
-            catch (System.Exception)
-            {
-                return StatusCode(500, "Unknown error occurred");
-            }
-        }
+        //         return Ok("Registrasi sukses");
+        //     }
+        //     catch (System.Exception)
+        //     {
+        //         return StatusCode(500, "Unknown error occurred");
+        //     }
+        // }
 
         [HttpDelete("{userEmail}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<User>> DeleteUser(string userEmail)
@@ -178,34 +178,6 @@ namespace SecondV.Controllers
         //     }            
         // }
 
-        [HttpPut("ChangeName")]
-        public async Task<ActionResult<User>> ChangeUserName(User request)
-        {
-            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
-            try
-            {
-                var validUser = await this.dataContext.Users.FindAsync(request.Id);
-                if (validUser == null)
-                    return BadRequest("Not valid data");
-
-                if (validUser.email != request.email)
-                    return BadRequest("Not valid data");
-
-                validUser.nama = request.nama;
-
-                await this.dataContext.SaveChangesAsync();
-
-                await dbContextTransaction.CommitAsync();
-
-                return Ok("Success");
-            }
-            catch (System.Exception)
-            {
-                await dbContextTransaction.RollbackAsync();
-                return StatusCode(500, "Unknown error occurred");
-            }
-        }
-
         [HttpPost("CheckEmail")]
         public async Task<ActionResult<List<User>>> CheckEmail(User request)
         {
@@ -225,7 +197,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost("MInvoice")]
+        [HttpPost("MInvoice"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<MasterInvoice>>> AddMasterInvoice(MasterInvoice masterInvoice)
         {
             try
@@ -248,7 +220,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPost("InvoiceDetails")]
+        [HttpPost("InvoiceDetails"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<InvoiceDetail>>> AddInvoiceDetail(InvoiceDetails request)
         {
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
@@ -332,7 +304,7 @@ namespace SecondV.Controllers
         //     }
         // }
 
-        [HttpGet("Cart/{userID}")]
+        [HttpGet("Cart/{userID}"), Authorize(Roles = "student")]
         public async Task<ActionResult<Cart>> GetCartByUID(int userID)
         {
             try
@@ -375,7 +347,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpDelete("Cart/{UserId}/{id}")]
+        [HttpDelete("Cart/{UserId}/{id}"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<Cart>>> Delete(int UserId, int id)
         {
             try
@@ -398,7 +370,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpDelete("Cart/ByCourseId/{UserId}/{courseId}")]
+        [HttpDelete("Cart/ByCourseId/{UserId}/{courseId}"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<Cart>>> DeleteByCourseId(int UserId, int courseId)
         {
             try
@@ -421,7 +393,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpGet("Invoices/{userId}")]
+        [HttpGet("Invoices/{userId}"), Authorize(Roles = "student")]
         public async Task<ActionResult<MasterInvoice>> GetByUserID(int userId)
         {
             try
@@ -438,7 +410,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpGet("InvoicesDetails/{UserId}/{noInvoice}")]
+        [HttpGet("InvoicesDetails/{UserId}/{noInvoice}"), Authorize(Roles = "student")]
         public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByNoInvoice(int UserId, string noInvoice)
         {
             try
@@ -471,7 +443,7 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpGet("Courses/{userId}")]
+        [HttpGet("Courses/{userId}"), Authorize(Roles = "student")]
         public async Task<ActionResult<UserCourse>> GetCourseByUserID(int userId)
         {
             try
