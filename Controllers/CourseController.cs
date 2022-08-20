@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SecondV.Controllers
@@ -16,7 +17,9 @@ namespace SecondV.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Course>>> Get()
         {
-            var data = await this.dataContext.Courses.
+            try
+            {
+                var data = await this.dataContext.Courses.
                 Join(this.dataContext.CourseCategories,
                     c => c.CourseCategoryId,
                     cc => cc.Id,
@@ -25,13 +28,18 @@ namespace SecondV.Controllers
                 {
                     result.c.Id,
                     result.c.CourseTitle,
-                    result.c.Jadwal,
+                    // result.c.Jadwal,
                     result.c.Price,
                     result.cc.Category,
                     courseCategoryId = result.cc.Id
                 }).ToListAsync();
 
-            return Ok(data);
+                return Ok(data);
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpGet("{id}")]
@@ -53,7 +61,9 @@ namespace SecondV.Controllers
         [HttpGet("LandingPage")]
         public async Task<ActionResult<List<Course>>> GetClass()
         {
-            var data = await this.dataContext.Courses.
+            try
+            {
+                var data = await this.dataContext.Courses.
                 Join(this.dataContext.CourseCategories,
                     c => c.CourseCategoryId,
                     cc => cc.Id,
@@ -66,23 +76,58 @@ namespace SecondV.Controllers
                     result.c.CourseImage,
                     result.c.Price,
                     result.cc.Category,
-                    CategoryId = result.cc.Id 
+                    CategoryId = result.cc.Id
                 }).ToListAsync();
 
-            return Ok(data);
+                return Ok(data);
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
-        [HttpPost]
+        [HttpGet("AdminDialog")]
+        public async Task<ActionResult<List<Course>>> GetCourseId()
+        {
+            try
+            {
+                var result = await this.dataContext.Courses.Select(result => new
+                {
+                    result.Id,
+                    result.CourseTitle,
+                }).ToListAsync();
+
+                return Ok(result);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
+        [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Course>>> AddCourse(Course course)
         {
-            var validTitle = await this.dataContext.Courses.FirstOrDefaultAsync(data => data.CourseTitle == course.CourseTitle);
-            if (validTitle != null)
-                return BadRequest("Course sudah ada");
+            try
+            {
+                var validTitle = await this.dataContext.Courses.FirstOrDefaultAsync(data => data.CourseTitle == course.CourseTitle);
+                if (validTitle != null)
+                    return BadRequest("Course sudah ada");
 
-            this.dataContext.Courses.Add(course);
-            await this.dataContext.SaveChangesAsync();
+                var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
+                if (validCategory == null)
+                    return BadRequest("Kategori tidak tersedia");
 
-            return Ok("Course berhasil ditambahkan");
+                this.dataContext.Courses.Add(course);
+                await this.dataContext.SaveChangesAsync();
+
+                return Ok("Course berhasil ditambahkan");
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
         [HttpGet("categoryId/{courseCategoryId}")]
@@ -90,8 +135,8 @@ namespace SecondV.Controllers
         {
             try
             {
-                var course = await this.dataContext.Courses.FirstOrDefaultAsync(result => result.CourseCategoryId == courseCategoryId);
-                if (course == null)
+                var course = await this.dataContext.Courses.Where(result => result.CourseCategoryId == courseCategoryId).ToListAsync();
+                if (course.Count == 0)
                     return BadRequest("Not Found");
                 return Ok(course);
             }
@@ -101,35 +146,81 @@ namespace SecondV.Controllers
             }
         }
 
-        [HttpPut]
-        public async Task<ActionResult<List<Course>>> Update(Course request)
+        [HttpGet("categoryId/{courseCategoryId}/{Id}")]
+        public async Task<ActionResult<List<Course>>> GetCourseByCategoryId(int courseCategoryId, int Id)
         {
-            var course = await this.dataContext.Courses.FindAsync(request.Id);
-            if (course == null)
-                return BadRequest("User not found");
-
-            course.CourseTitle = request.CourseTitle;
-            course.CourseImage = request.CourseImage;
-            course.CourseDesc = request.CourseDesc;
-            course.Jadwal = request.Jadwal;
-            course.Price = request.Price;
-            course.CourseCategoryId = request.CourseCategoryId;
-
-            await this.dataContext.SaveChangesAsync();
-            return Ok(await this.dataContext.Courses.ToListAsync());
+            try
+            {
+                var course = await this.dataContext.Courses.Where(result => result.CourseCategoryId == courseCategoryId && result.Id != Id).ToListAsync();
+                if (course.Count == 0)
+                    return BadRequest("Not Found");
+                return Ok(course);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
 
-        [HttpDelete]
+        [HttpPut, Authorize(Roles = "admin")]
+        public async Task<ActionResult<List<Course>>> Update(Course request)
+        {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+            try
+            {
+                var course = await this.dataContext.Courses.FindAsync(request.Id);
+                if (course == null)
+                    return NotFound("Course not found");
+
+                var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
+                if (validCategory == null)
+                    return BadRequest("Kategori tidak tersedia");
+                course.Id = request.Id;
+                course.CourseTitle = request.CourseTitle;
+                course.CourseImage = request.CourseImage;
+                course.CourseDesc = request.CourseDesc;
+                course.Price = request.Price;
+                course.CourseCategoryId = request.CourseCategoryId;
+
+                await this.dataContext.SaveChangesAsync();
+
+                var valid = await this.dataContext.Courses.Where(result => result.CourseTitle == request.CourseTitle).ToListAsync();
+                if (valid.Count > 1)
+                {
+                    await dbContextTransaction.RollbackAsync();
+                    return BadRequest("Kursus dengan judul serupa ditemukan");
+                }
+
+                await dbContextTransaction.CommitAsync();
+
+                return Ok(await this.dataContext.Courses.ToListAsync());
+            }
+            catch
+            {
+                await dbContextTransaction.RollbackAsync();
+                return StatusCode(500, "Unknown error occurred");
+            }
+
+        }
+
+        [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
-            var course = await this.dataContext.Courses.FindAsync(id);
-            if (course == null)
-                return BadRequest("Not Found");
+            try
+            {
+                var course = await this.dataContext.Courses.FindAsync(id);
+                if (course == null)
+                    return BadRequest("Not Found");
 
-            this.dataContext.Courses.Remove(course);
-            await this.dataContext.SaveChangesAsync();
+                this.dataContext.Courses.Remove(course);
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok(await this.dataContext.Courses.ToListAsync());
+                return Ok(await this.dataContext.Courses.ToListAsync());
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
         }
     }
 }
