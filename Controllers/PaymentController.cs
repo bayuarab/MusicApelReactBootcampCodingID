@@ -13,14 +13,14 @@ namespace SecondV.Controllers
         {
             this.dataContext = dataContext;
         }
-        
+
         [HttpGet, Authorize(Roles = "admin, student")]
         public async Task<ActionResult<List<PaymentMethod>>> GetPaymentMethod()
         {
             try
             {
                 var data = await this.dataContext.PaymentMethods.ToListAsync();
-                return Ok(data);    
+                return Ok(data);
             }
             catch
             {
@@ -31,21 +31,25 @@ namespace SecondV.Controllers
         [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<PaymentMethod>> AddPaymentMethod(PaymentMethod request)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var validMethod = await this.dataContext.PaymentMethods.FirstOrDefaultAsync(data => data.Method == request.Method);
                 if (validMethod != null)
                     return BadRequest("Not valid data");
-                
+
                 this.dataContext.PaymentMethods.Add(request);
                 await this.dataContext.SaveChangesAsync();
+
+                await dbContextTransaction.CommitAsync();
 
                 return Ok("Success");
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
-            }            
+            }
         }
 
         [HttpPut, Authorize(Roles = "admin")]
@@ -57,15 +61,16 @@ namespace SecondV.Controllers
                 var validMethod = await this.dataContext.PaymentMethods.FindAsync(request.Id);
                 if (validMethod == null)
                     return BadRequest("Not valid data");
-                
+
                 validMethod.Method = request.Method;
                 validMethod.Icon = request.Icon;
 
                 await this.dataContext.SaveChangesAsync();
 
                 var validTransaction = await this.dataContext.PaymentMethods.Where(data => data.Method == request.Method).ToListAsync();
-                if (validTransaction.Count > 1) {
-                    await dbContextTransaction.RollbackAsync();    
+                if (validTransaction.Count > 1)
+                {
+                    await dbContextTransaction.RollbackAsync();
                     return BadRequest("Not valid data, rollback");
                 }
 
@@ -75,13 +80,15 @@ namespace SecondV.Controllers
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
-            }            
+            }
         }
 
         [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<PaymentMethod>> DeleteMethod(int id)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var validMethod = await this.dataContext.PaymentMethods.FindAsync(id);
@@ -90,11 +97,14 @@ namespace SecondV.Controllers
 
                 this.dataContext.PaymentMethods.Remove(validMethod);
                 await this.dataContext.SaveChangesAsync();
- 
+
+                await dbContextTransaction.CommitAsync();
+
                 return Ok("Success");
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }

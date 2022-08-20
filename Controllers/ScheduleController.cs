@@ -14,19 +14,6 @@ namespace SecondV.Controllers
             this.dataContext = dataContext;
         }
 
-        // [HttpGet]
-        // public async Task<ActionResult<List<Schedule>>> GetSchedule()
-        // {
-        //     try
-        //     {
-        //         return Ok(await this.dataContext.Schedules.ToListAsync());
-        //     }
-        //     catch (System.Exception)
-        //     {
-        //         return StatusCode(500, "Unknown error occurred");
-        //     }
-        // }
-
         [HttpGet("Admin"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Schedule>>> Get()
         {
@@ -74,6 +61,7 @@ namespace SecondV.Controllers
         [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Schedule>>> PostSchedule([FromBody] Schedule schedule)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var validCourse = await this.dataContext.Courses.FindAsync(schedule.CourseId);
@@ -87,6 +75,8 @@ namespace SecondV.Controllers
                 this.dataContext.Schedules.Add(schedule);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 var result = new
                 {
                     message = "Jadwal berhasil ditambahkan pada kelas",
@@ -97,6 +87,7 @@ namespace SecondV.Controllers
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -113,13 +104,13 @@ namespace SecondV.Controllers
 
                 var usedSchedule = await this.dataContext.UserCourses.FirstOrDefaultAsync(data => data.ScheduleId == request.id);
                 if (usedSchedule != null)
-                    return BadRequest("Cannot delete used schedule");
+                    return BadRequest("Cannot edit used schedule");
 
                 schedule.jadwal = request.jadwal;
                 schedule.CourseId = request.CourseId;
 
                 await this.dataContext.SaveChangesAsync();
-                
+
                 var valid = await this.dataContext.Schedules.
                 Where(result => result.jadwal == request.jadwal && result.CourseId == request.CourseId).ToListAsync();
                 if (valid.Count > 1)
@@ -134,6 +125,7 @@ namespace SecondV.Controllers
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -141,6 +133,7 @@ namespace SecondV.Controllers
         [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Schedule>>> Delete(int id)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var schedule = await this.dataContext.Schedules.FindAsync(id);
@@ -154,10 +147,13 @@ namespace SecondV.Controllers
                 this.dataContext.Schedules.Remove(schedule);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 return Ok(await this.dataContext.Courses.ToListAsync());
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
