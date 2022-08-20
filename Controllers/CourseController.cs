@@ -87,6 +87,25 @@ namespace SecondV.Controllers
             }
         }
 
+        [HttpGet("AdminDialog")]
+        public async Task<ActionResult<List<Course>>> GetCourseId()
+        {
+            try
+            {
+                var result = await this.dataContext.Courses.Select(result => new
+                {
+                    result.Id,
+                    result.CourseTitle,
+                }).ToListAsync();
+
+                return Ok(result);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
+
         [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Course>>> AddCourse(Course course)
         {
@@ -178,6 +197,7 @@ namespace SecondV.Controllers
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
 
