@@ -72,7 +72,7 @@ namespace SecondV.Controllers
             return Ok(new {token, userData});
         }
 
-        [HttpPut("ChangePassword"), Authorize(Roles = "student")]
+        [HttpPost("ChangePassword"), Authorize(Roles = "student")]
         public async Task<ActionResult<User>> ChangeUserPassword(userChangePassword request)
         {
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
@@ -131,7 +131,7 @@ namespace SecondV.Controllers
             }            
         }
 
-        [HttpPut("ChangeName"), Authorize(Roles = "student")]
+        [HttpPost("ChangeName"), Authorize(Roles = "student")]
         public async Task<ActionResult<User>> ChangeUserName(User request)
         {
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
