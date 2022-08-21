@@ -81,6 +81,7 @@ namespace SecondV.Controllers
         [HttpDelete("{userEmail}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<User>> DeleteUser(string userEmail)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var user = await this.dataContext.Users.FirstOrDefaultAsync(user => user.email == userEmail);
@@ -89,11 +90,13 @@ namespace SecondV.Controllers
 
                 this.dataContext.Users.Remove(user);
                 await this.dataContext.SaveChangesAsync();
+                await dbContextTransaction.CommitAsync();
 
                 return Ok("Success");
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -200,6 +203,7 @@ namespace SecondV.Controllers
         [HttpPost("MInvoice"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<MasterInvoice>>> AddMasterInvoice(MasterInvoice masterInvoice)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var validId = await this.dataContext.MasterInvoices.FindAsync(masterInvoice.Id);
@@ -210,12 +214,16 @@ namespace SecondV.Controllers
 
                 this.dataContext.MasterInvoices.Add(masterInvoice);
                 await this.dataContext.SaveChangesAsync();
+                
+                await dbContextTransaction.CommitAsync();
+
                 var newMasterInvoice = this.dataContext.MasterInvoices.FirstOrDefault(result => result.NoInvoice == masterInvoice.NoInvoice);
+
                 return Ok(newMasterInvoice);
             }
-
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -280,6 +288,7 @@ namespace SecondV.Controllers
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -350,6 +359,7 @@ namespace SecondV.Controllers
         [HttpDelete("Cart/{UserId}/{id}"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<Cart>>> Delete(int UserId, int id)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var userCart = await this.dataContext.Carts.FindAsync(id);
@@ -362,10 +372,13 @@ namespace SecondV.Controllers
                 this.dataContext.Carts.Remove(userCart);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 return Ok(await this.dataContext.Carts.ToListAsync());
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -373,6 +386,7 @@ namespace SecondV.Controllers
         [HttpDelete("Cart/ByCourseId/{UserId}/{courseId}"), Authorize(Roles = "student")]
         public async Task<ActionResult<List<Cart>>> DeleteByCourseId(int UserId, int courseId)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var userCart = await this.dataContext.Carts.FirstOrDefaultAsync(data => data.UserId == UserId && data.CourseId == courseId);
@@ -385,10 +399,13 @@ namespace SecondV.Controllers
                 this.dataContext.Carts.Remove(userCart);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 return Ok(await this.dataContext.Carts.ToListAsync());
             }
             catch
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }

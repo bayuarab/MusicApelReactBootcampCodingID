@@ -31,45 +31,65 @@ namespace SecondV.Controllers
         [HttpPost("Register")]
         public async Task<ActionResult<User>> Register(UserAuthDto request)
         {
-            if (request.Password == null)
-                return BadRequest("invalid password");
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
+            try
+            {
+                if (request.Password == null)
+                    return BadRequest("invalid password");
 
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            
-            this.dataContext.Users.Add(entity: new User {
-                nama = request.Nama,
-                email = request.Email,
-                passwordHash = passwordHash,
-                passwordSalt = passwordSalt,
-                roles = request.Roles
-            });
-            
-            await this.dataContext.SaveChangesAsync();
+                CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                
+                this.dataContext.Users.Add(entity: new User {
+                    nama = request.Nama,
+                    email = request.Email,
+                    passwordHash = passwordHash,
+                    passwordSalt = passwordSalt,
+                    roles = request.Roles
+                });
+                
+                await this.dataContext.SaveChangesAsync();
 
-            return Ok("Success");
+                await dbContextTransaction.CommitAsync();
+
+                return Ok("Success");
+            }
+            catch (System.Exception)
+            {
+                await dbContextTransaction.RollbackAsync();
+                return StatusCode(500, "Unknown error occurred");
+            }
+
         }
 
         [HttpPost("Login")]
         public async Task<ActionResult<string>> Login(UserAuthDto request)
         {
-            var validUser = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == request.Email);
-            if (validUser == null || request.Password == null || validUser.passwordHash == null || validUser.passwordSalt == null)
-                return BadRequest("Invalid user");
+            try
+            {
+                var validUser = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == request.Email);
+                if (validUser == null || request.Password == null || validUser.passwordHash == null || validUser.passwordSalt == null)
+                    return BadRequest("Invalid user");
 
-            var validPassword = VerifyPasswordHash(request.Password, validUser, validUser.passwordHash, validUser.passwordSalt);
+                var validPassword = VerifyPasswordHash(request.Password, validUser, validUser.passwordHash, validUser.passwordSalt);
 
-            if (!validPassword)
-                return BadRequest("Invalid user");
+                if (!validPassword)
+                    return BadRequest("Invalid user");
 
-            string token = CreateToken(validUser);
-            var userData = new User {
-                Id = validUser.Id,
-                email = validUser.email,
-                nama = validUser.nama,
-                roles = validUser.roles,
-            };
+                string token = CreateToken(validUser);
+                var userData = new User {
+                    Id = validUser.Id,
+                    email = validUser.email,
+                    nama = validUser.nama,
+                    roles = validUser.roles,
+                };
 
-            return Ok(new {token, userData});
+                return Ok(new {token, userData});
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+            
         }
 
         [HttpPost("ChangePassword"), Authorize(Roles = "student")]
