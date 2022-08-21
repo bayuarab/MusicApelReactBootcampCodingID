@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-// "ConnectionStrings": {
-//   "DefaultConnection": "server=localhost\\sqlexpress;database=SecondVDb;trusted_connection=true"
-// },
+
 namespace SecondV.Controllers
 {
     [ApiController]
@@ -24,19 +22,6 @@ namespace SecondV.Controllers
             public int MasterInvoiceId { get; set; }
         }
 
-        // [HttpGet]
-        // public async Task<ActionResult<List<User>>> GetUser()
-        // {
-        //     try
-        //     {
-        //         return Ok(await this.dataContext.Users.ToListAsync());
-        //     }
-        //     catch (System.Exception)
-        //     {
-        //         return StatusCode(500, "Unknown error occurred");
-        //     }
-        // }
-
         [HttpGet("AllUser"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<User>>> GetAllUser()
         {
@@ -57,26 +42,6 @@ namespace SecondV.Controllers
                 return StatusCode(500, "Unknown error occurred");
             }
         }
-
-        // [HttpPost]
-        // public async Task<ActionResult<List<User>>> AddUsers(User user)
-        // {
-        //     try
-        //     {
-        //         var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == user.email);
-        //         if (validEmail != null)
-        //             return BadRequest("Email sudah terdaftar");
-
-        //         this.dataContext.Users.Add(user);
-        //         await this.dataContext.SaveChangesAsync();
-
-        //         return Ok("Registrasi sukses");
-        //     }
-        //     catch (System.Exception)
-        //     {
-        //         return StatusCode(500, "Unknown error occurred");
-        //     }
-        // }
 
         [HttpDelete("{userEmail}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<User>> DeleteUser(string userEmail)
@@ -100,86 +65,6 @@ namespace SecondV.Controllers
                 return StatusCode(500, "Unknown error occurred");
             }
         }
-
-        // [HttpPost("Login")]
-        // public async Task<ActionResult<List<User>>> UserLogin(User request)
-        // {
-        //     try
-        //     {
-        //         var userValid = await this.dataContext.Users.FirstOrDefaultAsync(result => result.email == request.email);
-        //         if (userValid == null)
-        //             return BadRequest("Akun tidak ditemukan");
-
-        //         if (userValid.password != request.password)
-        //             return BadRequest("Password Salah");
-
-        //         var valid = await this.dataContext.Users.
-        //         Where(result => result.email == request.email).
-        //         Select(result => new
-        //         {
-        //             id = result.Id,
-        //             roles = result.roles,
-        //             nama = result.nama
-        //         }).ToListAsync();
-
-        //         return Ok(valid[0]);
-        //     }
-        //     catch (System.Exception)
-        //     {
-        //         return StatusCode(500, "Unknown error occurred");
-        //     }
-        // }
-
-        // [HttpPut("ChangePassword")]
-        // public async Task<ActionResult<User>> ChangeUserPass(User request)
-        // {
-        //     Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
-        //     try
-        //     {
-        //         var validUser = await this.dataContext.Users.FindAsync(request.Id);
-        //         if (validUser == null)
-        //             return BadRequest("Not valid data");
-
-        //         if (validUser.email != request.email)
-        //             return BadRequest("Not valid data");
-                
-        //         // validUser.password = request.password;
-
-        //         await this.dataContext.SaveChangesAsync();
-
-        //         await dbContextTransaction.CommitAsync();
-
-        //         return Ok("Success");
-        //     }
-        //     catch (System.Exception)
-        //     {
-        //         await dbContextTransaction.RollbackAsync();
-        //         return StatusCode(500, "Unknown error occurred");
-        //     }            
-        // }
-
-        // [HttpPost("PasswordValidation")]
-        // public async Task<ActionResult<List<User>>> ValidationChangePassword(User request)
-        // {
-        //     try
-        //     {
-        //         var validUser = await this.dataContext.Users.FindAsync(request.Id);
-        //         if (validUser == null)
-        //             return BadRequest("Not valid data");
-
-        //         if (validUser.email != request.email)
-        //             return BadRequest("Not valid data");
-                
-        //         // if (validUser.password != request.password)
-        //             // return BadRequest("Data not valid");
-
-        //         return Ok("Success");
-        //     }
-        //     catch (System.Exception)
-        //     {
-        //         return StatusCode(500, "Unknown error occurred");
-        //     }            
-        // }
 
         [HttpPost("CheckEmail")]
         public async Task<ActionResult<List<User>>> CheckEmail(User request)
@@ -280,7 +165,6 @@ namespace SecondV.Controllers
                 });
 
                 await this.dataContext.SaveChangesAsync();
-                // await this.dataContext.SaveChangesAsync();
 
                 await dbContextTransaction.CommitAsync();
 
@@ -292,26 +176,6 @@ namespace SecondV.Controllers
                 return StatusCode(500, "Unknown error occurred");
             }
         }
-
-        // [HttpPost("Course")]
-        // public async Task<ActionResult<List<Course>>> AddUserCourses(UserCourse request)
-        // {
-        //     try
-        //     {
-        //         var validUser = this.dataContext.Users.FindAsync(request.UserId);
-        //         if (validUser == null)
-        //             return BadRequest("Not valid data");
-
-        //         var validCourse = this.dataContext.Courses.FindAsync(request.UserId);
-        //         if (validUser == null)
-        //             return BadRequest("Not valid data");
-        //     }
-        //     catch (System.Exception)
-        //     {
-
-        //         throw;
-        //     }
-        // }
 
         [HttpGet("Cart/{userID}"), Authorize(Roles = "student")]
         public async Task<ActionResult<Cart>> GetCartByUID(int userID)
@@ -498,44 +362,5 @@ namespace SecondV.Controllers
                 return StatusCode(500, "Unknown error occurred");
             }
         }
-
-        // [HttpGet("Courses/{userId}")]
-        // public async Task<ActionResult<InvoiceDetail>> GetInvoiceDetailByUserID(int userId)
-        // {
-        //     try
-        //     {
-        //         var courseData = await this.dataContext.MasterInvoices.
-        //         Join(this.dataContext.InvoiceDetails,
-        //             mi => mi.Id,
-        //             ind => ind.MasterInvoiceId,
-        //             (mi, ind) => new { mi, ind }).
-        //         Join(this.dataContext.Courses,
-        //             mind => mind.ind.Course,
-        //             c => c.CourseTitle,
-        //             (mindc, c) => new { mindc, c }).
-        //         Join(this.dataContext.CourseCategories,
-        //             mindc => mindc.c.CourseCategoryId,
-        //             cc => cc.Id,
-        //             (mindccc, cc) => new { mindccc, cc }).
-        //         Where(result => result.mindccc.mindc.mi.UserId == userId).
-        //         Select(result => new
-        //         {
-        //             CourseImage = result.mindccc.c.CourseImage,
-        //             CourseId = result.mindccc.c.Id,
-        //             Course = result.mindccc.c.CourseTitle,
-        //             Category = result.cc.Category,
-        //             Schedule = result.mindccc.mindc.ind.Schedule
-        //         }).ToListAsync();
-
-        //         if (courseData.Count == 0)
-        //             return BadRequest("Not Found");
-
-        //         return Ok(courseData);
-        //     }
-        //     catch
-        //     {
-        //         return StatusCode(500, "Unknown error occurred");
-        //     }
-        // }
     }
 }
