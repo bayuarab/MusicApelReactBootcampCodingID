@@ -65,6 +65,7 @@ namespace SecondV.Controllers
         [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<CourseCategory>>> AddCourseCategory([FromBody] CourseCategory courseCategory)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var validCategory = await this.dataContext.CourseCategories.FirstOrDefaultAsync(data => data.Category == courseCategory.Category);
@@ -74,10 +75,13 @@ namespace SecondV.Controllers
                 this.dataContext.CourseCategories.Add(courseCategory);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 return Ok("Category berhasil ditambahkan");
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -121,6 +125,7 @@ namespace SecondV.Controllers
         [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var courseCategory = await this.dataContext.CourseCategories.FindAsync(id);
@@ -130,10 +135,13 @@ namespace SecondV.Controllers
                 this.dataContext.CourseCategories.Remove(courseCategory);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 return Ok(await this.dataContext.CourseCategories.ToListAsync());
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }

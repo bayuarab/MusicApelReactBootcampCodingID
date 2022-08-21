@@ -28,7 +28,6 @@ namespace SecondV.Controllers
                 {
                     result.c.Id,
                     result.c.CourseTitle,
-                    // result.c.Jadwal,
                     result.c.Price,
                     result.cc.Category,
                     courseCategoryId = result.cc.Id
@@ -109,6 +108,7 @@ namespace SecondV.Controllers
         [HttpPost, Authorize(Roles = "admin")]
         public async Task<ActionResult<List<Course>>> AddCourse(Course course)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var validTitle = await this.dataContext.Courses.FirstOrDefaultAsync(data => data.CourseTitle == course.CourseTitle);
@@ -122,10 +122,13 @@ namespace SecondV.Controllers
                 this.dataContext.Courses.Add(course);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 return Ok("Course berhasil ditambahkan");
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
@@ -206,6 +209,7 @@ namespace SecondV.Controllers
         [HttpDelete("{id}"), Authorize(Roles = "admin")]
         public async Task<ActionResult<List<CourseCategory>>> Delete(int id)
         {
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
                 var course = await this.dataContext.Courses.FindAsync(id);
@@ -215,10 +219,13 @@ namespace SecondV.Controllers
                 this.dataContext.Courses.Remove(course);
                 await this.dataContext.SaveChangesAsync();
 
+                await dbContextTransaction.CommitAsync();
+
                 return Ok(await this.dataContext.Courses.ToListAsync());
             }
             catch (System.Exception)
             {
+                await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
         }
