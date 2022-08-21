@@ -96,6 +96,17 @@ namespace SecondV.Controllers
                 if (courseCat == null)
                     return BadRequest("Category not found");
 
+                var usedCategory = await this.dataContext.UserCourses.
+                    Join(this.dataContext.Courses,
+                        uc => uc.CourseId,
+                        c => c.Id,
+                        (ca, c) => new { ca, c }).
+                    Where(data => data.c.CourseCategoryId == request.Id).
+                    ToListAsync();
+                    
+                if (usedCategory.Count != 0)
+                    return BadRequest("Cannot edit used category");
+
                 courseCat.Category = request.Category;
                 courseCat.image = request.image;
                 courseCat.desc = request.desc;
@@ -131,6 +142,17 @@ namespace SecondV.Controllers
                 var courseCategory = await this.dataContext.CourseCategories.FindAsync(id);
                 if (courseCategory == null)
                     return BadRequest("Not Found");
+
+                var usedCategory = await this.dataContext.UserCourses.
+                    Join(this.dataContext.Courses,
+                        uc => uc.CourseId,
+                        c => c.Id,
+                        (ca, c) => new { ca, c }).
+                    Where(data => data.c.CourseCategoryId == id).
+                    ToListAsync();
+                    
+                if (usedCategory.Count != 0)
+                    return BadRequest("Cannot edit used category");
 
                 this.dataContext.CourseCategories.Remove(courseCategory);
                 await this.dataContext.SaveChangesAsync();
