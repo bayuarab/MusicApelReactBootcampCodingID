@@ -175,6 +175,10 @@ namespace SecondV.Controllers
                 if (course == null)
                     return NotFound("Course not found");
 
+                var usedCourse = await this.dataContext.UserCourses.FirstOrDefaultAsync(data => data.CourseId == request.Id);
+                if (usedCourse != null)
+                    return BadRequest("Cannot edit used course");
+
                 var validCategory = await this.dataContext.CourseCategories.FindAsync(course.CourseCategoryId);
                 if (validCategory == null)
                     return BadRequest("Kategori tidak tersedia");
@@ -215,6 +219,10 @@ namespace SecondV.Controllers
                 var course = await this.dataContext.Courses.FindAsync(id);
                 if (course == null)
                     return BadRequest("Not Found");
+
+                var usedCourse = await this.dataContext.UserCourses.FirstOrDefaultAsync(data => data.CourseId == id);
+                if (usedCourse != null)
+                    return BadRequest("Cannot delete used course");
 
                 this.dataContext.Courses.Remove(course);
                 await this.dataContext.SaveChangesAsync();

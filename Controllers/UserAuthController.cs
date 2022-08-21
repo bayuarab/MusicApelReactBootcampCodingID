@@ -34,19 +34,24 @@ namespace SecondV.Controllers
             Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbContextTransaction = await this.dataContext.Database.BeginTransactionAsync();
             try
             {
+                var validEmail = await this.dataContext.Users.FirstOrDefaultAsync(data => data.email == request.Email);
+                if (validEmail != null)
+                    return BadRequest("Email sudah terdaftar");
+
                 if (request.Password == null)
                     return BadRequest("invalid password");
 
                 CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-                
-                this.dataContext.Users.Add(entity: new User {
+
+                this.dataContext.Users.Add(entity: new User
+                {
                     nama = request.Nama,
                     email = request.Email,
                     passwordHash = passwordHash,
                     passwordSalt = passwordSalt,
                     roles = request.Roles
                 });
-                
+
                 await this.dataContext.SaveChangesAsync();
 
                 await dbContextTransaction.CommitAsync();
@@ -58,7 +63,6 @@ namespace SecondV.Controllers
                 await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
             }
-
         }
 
         [HttpPost("Login")]
@@ -76,20 +80,21 @@ namespace SecondV.Controllers
                     return BadRequest("Invalid user");
 
                 string token = CreateToken(validUser);
-                var userData = new User {
+                var userData = new User
+                {
                     Id = validUser.Id,
                     email = validUser.email,
                     nama = validUser.nama,
                     roles = validUser.roles,
                 };
 
-                return Ok(new {token, userData});
+                return Ok(new { token, userData });
             }
             catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
             }
-            
+
         }
 
         [HttpPost("ChangePassword"), Authorize(Roles = "student")]
@@ -104,7 +109,7 @@ namespace SecondV.Controllers
 
                 if (validUser.email != request.Email)
                     return BadRequest("Not valid data");
-                
+
                 if (request.Password == null)
                     return BadRequest("invalid password");
 
@@ -123,7 +128,7 @@ namespace SecondV.Controllers
             {
                 await dbContextTransaction.RollbackAsync();
                 return StatusCode(500, "Unknown error occurred");
-            }            
+            }
         }
 
         [HttpPost("PasswordValidation"), Authorize(Roles = "student")]
@@ -148,7 +153,7 @@ namespace SecondV.Controllers
             catch (System.Exception)
             {
                 return StatusCode(500, "Unknown error occurred");
-            }            
+            }
         }
 
         [HttpPost("ChangeName"), Authorize(Roles = "student")]
@@ -183,7 +188,7 @@ namespace SecondV.Controllers
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using(var hmac = new HMACSHA512())
+            using (var hmac = new HMACSHA512())
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
@@ -194,7 +199,7 @@ namespace SecondV.Controllers
         {
             if (validUser.passwordSalt == null)
                 return (false);
-            
+
             using (var hmac = new HMACSHA512(validUser.passwordSalt))
             {
                 var computeHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
@@ -202,7 +207,7 @@ namespace SecondV.Controllers
             }
         }
 
-         private string CreateToken(User user)
+        private string CreateToken(User user)
         {
             List<Claim> claims = new List<Claim>
             {
