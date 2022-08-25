@@ -99,7 +99,7 @@ namespace SecondV.Controllers
 
                 this.dataContext.MasterInvoices.Add(masterInvoice);
                 await this.dataContext.SaveChangesAsync();
-                
+
                 await dbContextTransaction.CommitAsync();
 
                 var newMasterInvoice = this.dataContext.MasterInvoices.FirstOrDefault(result => result.NoInvoice == masterInvoice.NoInvoice);
@@ -362,5 +362,45 @@ namespace SecondV.Controllers
                 return StatusCode(500, "Unknown error occurred");
             }
         }
+
+        [HttpGet("AvailableCourse/{userId}"), Authorize(Roles = "student")]
+        public async Task<ActionResult<UserCourse>> GetCourseByUser(int userId)
+        {
+            try
+            {
+                var find = await this.dataContext.UserCourses.Where(data => data.UserId == userId).Select(result => new
+                {
+                    Id = result.CourseId,
+                }).ToListAsync();
+
+                var courseData = await this.dataContext.CourseCategories.
+                Join(this.dataContext.Courses,
+                    cc => cc.Id,
+                    c => c.CourseCategoryId,
+                    (cc, c) => new { cc, c }).
+                Where(data => data.c.Id != find[find.Count - 1].Id).
+                OrderByDescending(result => result.c.Id).
+                Select(result => new
+                {
+                    CourseImage = result.c.CourseImage,
+                    Id = result.c.Id,
+                    CourseTitle = result.c.CourseTitle,
+                    Price = result.c.Price,
+                    Category = result.cc.Category,
+                    CategoryId = result.cc.Id,
+                }).ToListAsync();
+
+                if (courseData.Count == 0)
+                    return BadRequest("Not Found");
+
+                var output = courseData.Where((data, index) => index < 6);
+                return Ok(output);
+            }
+            catch
+            {
+                return StatusCode(500, "Unknown error occurred");
+            }
+        }
     }
+
 }

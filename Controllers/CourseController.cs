@@ -28,6 +28,7 @@ namespace SecondV.Controllers
                 {
                     result.c.Id,
                     result.c.CourseTitle,
+                    result.c.CourseImage,
                     result.c.Price,
                     result.cc.Category,
                     courseCategoryId = result.cc.Id
@@ -78,7 +79,9 @@ namespace SecondV.Controllers
                     CategoryId = result.cc.Id
                 }).ToListAsync();
 
-                return Ok(data);
+                var output = data.Where((data, index) => index < 6);
+
+                return Ok(output);
             }
             catch (System.Exception)
             {
